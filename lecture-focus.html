@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NIARB // Acoustic Focus & Lecture DSP Console</title>
+  <style>
+    :root {
+      --bg-deep: #06080d;
+      --bg-surface: rgba(16, 22, 34, 0.78);
+      --bg-card: rgba(11, 15, 25, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-highlight: rgba(56, 189, 248, 0.35);
+      --text-main: #f1f5f9;
+      --text-dim: #94a3b8;
+      --text-muted: #64748b;
+      --cyan: #38bdf8;
+      --cyan-glow: rgba(56, 189, 248, 0.22);
+      --indigo: #818cf8;
+      --emerald: #10b981;
+      --rose: #f43f5e;
+      --amber: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI Variable Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      background-image:
+        radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(129, 140, 248, 0.08) 0%, transparent 45%),
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .console {
+      width: 100%;
+      max-width: 860px;
+      background: var(--bg-surface);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow:
+        0 25px 60px -15px rgba(0, 0, 0, 0.75),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    }
+
+    /* Top Header Bar */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(129, 140, 248, 0.2));
+      border: 1px solid var(--border-highlight);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--cyan);
+      letter-spacing: 0.05em;
+      box-shadow: 0 0 20px var(--cyan-glow);
+    }
+
+    .brand-text h1 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      display: inline-block;
+      transition: all 0.25s ease;
+    }
+
+    .status-dot.live {
+      background: var(--emerald);
+      box-shadow: 0 0 12px var(--emerald);
+    }
+
+    .brand-text p {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      margin-top: 3px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 10px 15px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--cyan);
+      color: var(--text-main);
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .btn-power {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35);
+      transition: all 0.2s ease;
+    }
+
+    .btn-power:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.08);
+    }
+
+    .btn-power.running {
+      background: linear-gradient(135deg, #f43f5e, #e11d48);
+      box-shadow: 0 4px 18px rgba(244, 63, 94, 0.35);
+    }
+
+    /* Preset Strip */
+    .preset-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .preset-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.18s ease;
+    }
+
+    .preset-card:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .preset-card.active {
+      border-color: var(--cyan);
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.14), rgba(11, 15, 25, 0.9));
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.12);
+    }
+
+    .preset-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 3px;
+    }
+
+    .preset-sub {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-family: 'Cascadia Code', Consolas, monospace;
+    }
+
+    /* Spectrum Analyzer Deck */
+    .scope-deck {
+      position: relative;
+      background: #04060a;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.8);
+    }
+
+    canvas {
+      width: 100%;
+      height: 155px;
+      display: block;
+      cursor: crosshair;
+    }
+
+    .scope-hud {
+      position: absolute;
+      top: 10px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .hud-tag {
+      background: rgba(6, 8, 13, 0.78);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      font-family: 'Cascadia Code', Consolas, monospace;
+    }
+
+    .hud-btn {
+      pointer-events: auto;
+      background: rgba(16, 22, 34, 0.88);
+      border: 1px solid var(--border);
+      color: var(--cyan);
+      padding: 5px 11px;
+      border-radius: 6px;
+      font-size: 0.73rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .hud-btn:hover {
+      border-color: var(--cyan);
+    }
+
+    /* Two-Column Synth Modules */
+    .synth-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .module {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .module-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .module-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+    }
+
+    .module-badge {
+      font-size: 0.72rem;
+      font-family: 'Cascadia Code', Consolas, monospace;
+      color: var(--cyan);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .seg-group {
+      display: flex;
+      background: #06080d;
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      gap: 4px;
+    }
+
+    .seg-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      padding: 8px 6px;
+      border-radius: 7px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .seg-btn.selected {
+      background: rgba(56, 189, 248, 0.16);
+      color: var(--cyan);
+      box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.35);
+    }
+
+    .slider-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-main);
+    }
+
+    .slider-val {
+      font-family: 'Cascadia Code', Consolas, monospace;
+      color: var(--cyan);
+      font-size: 0.78rem;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      background: #1e293b;
+      border-radius: 999px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+      border: 2px solid #fff;
+      cursor: grab;
+    }
+
+    .switch-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    /* Custom Toggle Switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 22px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider-toggle {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: #1e293b;
+      transition: 0.2s;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+    }
+
+    .slider-toggle:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #94a3b8;
+      transition: 0.2s;
+      border-radius: 50%;
+    }
+
+    .switch input:checked + .slider-toggle {
+      background-color: rgba(56, 189, 248, 0.25);
+      border-color: var(--cyan);
+    }
+
+    .switch input:checked + .slider-toggle:before {
+      transform: translateX(18px);
+      background-color: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+    }
+
+    /* Pomodoro Bar */
+    .pomo-deck {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 20px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .pomo-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .ring-wrap {
+      position: relative;
+      width: 44px;
+      height: 44px;
+    }
+
+    .ring-wrap svg {
+      transform: rotate(-90deg);
+      width: 44px;
+      height: 44px;
+    }
+
+    .ring-bg {
+      fill: none;
+      stroke: #1e293b;
+      stroke-width: 4;
+    }
+
+    .ring-fg {
+      fill: none;
+      stroke: var(--cyan);
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-dasharray: 113;
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 0.5s linear;
+    }
+
+    .pomo-time {
+      font-size: 1.55rem;
+      font-weight: 800;
+      font-family: 'Cascadia Code', Consolas, monospace;
+      color: var(--text-main);
+      letter-spacing: 0.03em;
+    }
+
+    .footer-keys {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-top: 16px;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+
+    kbd {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 2px 6px;
+      font-family: 'Cascadia Code', Consolas, monospace;
+      color: var(--text-dim);
+      font-size: 0.7rem;
+    }
+
+    @media (max-width: 720px) {
+      .preset-strip { grid-template-columns: 1fr 1fr; }
+      .synth-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="console">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-badge">NB</div>
+        <div class="brand-text">
+          <h1>NIARB DSP <span id="liveDot" class="status-dot"></span></h1>
+          <p>Acoustic Speech-Notch Masking & Neural Entrainment Workstation</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button id="testBellBtn" class="btn-ghost">Chime Check</button>
+        <button id="powerBtn" class="btn-power">ENGAGE AUDIO</button>
+      </div>
+    </div>
+
+    <div class="preset-strip" id="presetStrip">
+      <button class="preset-card" data-preset="male">
+        <div class="preset-title">Male Lecturer</div>
+        <div class="preset-sub">850Hz Carve • Alpha 10Hz</div>
+      </button>
+      <button class="preset-card" data-preset="female">
+        <div class="preset-title">Female Lecturer</div>
+        <div class="preset-sub">1650Hz Carve • Alpha 10Hz</div>
+      </button>
+      <button class="preset-card" data-preset="stem">
+        <div class="preset-title">STEM Problem Set</div>
+        <div class="preset-sub">1200Hz Carve • Beta 18Hz</div>
+      </button>
+      <button class="preset-card" data-preset="cram">
+        <div class="preset-title">Deep Exam Cram</div>
+        <div class="preset-sub">Pink Full • Gamma 40Hz</div>
+      </button>
+    </div>
+
+    <div class="scope-deck">
+      <canvas id="scope"></canvas>
+      <div class="scope-hud">
+        <span class="hud-tag" id="hudTelemetry">CLICK CANVAS TO TUNE VOCAL NOTCH • 2048-PT FFT</span>
+        <button id="visModeBtn" class="hud-btn">Mode: FFT Spectrum</button>
+      </div>
+    </div>
+
+    <div class="synth-grid">
+      <div class="module">
+        <div class="module-header">
+          <span class="module-title">01 // Acoustic Noise & Vocal Notch</span>
+          <span class="module-badge" id="notchBadge">NOTCH ACTIVE</span>
+        </div>
+
+        <div class="seg-group" id="noiseTypeGroup">
+          <button class="seg-btn selected" data-noise="brown">Brownian</button>
+          <button class="seg-btn" data-noise="pink">Pink (1/f)</button>
+          <button class="seg-btn" data-noise="white">White</button>
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-label">
+            <span>Masking Noise Gain</span>
+            <span class="slider-val" id="noiseVolVal">35%</span>
+          </div>
+          <input type="range" id="noiseVol" min="0" max="100" value="35">
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-label">
+            <span>Lecturer Vocal Pitch Carve</span>
+            <span class="slider-val" id="notchFreqVal">1200 Hz</span>
+          </div>
+          <input type="range" id="notchFreq" min="600" max="2500" step="10" value="1200">
+        </div>
+
+        <div class="switch-row">
+          <span>Speech-Band Carve Filter (Q = 0.85)</span>
+          <label class="switch">
+            <input type="checkbox" id="vocalCarve" checked>
+            <span class="slider-toggle"></span>
+          </label>
+        </div>
+
+        <div class="switch-row">
+          <span>0.12 Hz Anti-Fatigue Notch LFO</span>
+          <label class="switch">
+            <input type="checkbox" id="lfoToggle" checked>
+            <span class="slider-toggle"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="module">
+        <div class="module-header">
+          <span class="module-title">02 // Neural Phase Entrainment</span>
+          <span class="module-badge" id="beatStatus">10 Hz BINAURAL</span>
+        </div>
+
+        <div class="seg-group" id="beatGroup">
+          <button class="seg-btn" data-beat="0">Bypass</button>
+          <button class="seg-btn selected" data-beat="10">Alpha 10Hz</button>
+          <button class="seg-btn" data-beat="18">Beta 18Hz</button>
+          <button class="seg-btn" data-beat="40">Gamma 40Hz</button>
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-label">
+            <span>Sub-Carrier Gain</span>
+            <span class="slider-val" id="beatVolVal">15%</span>
+          </div>
+          <input type="range" id="beatVol" min="0" max="100" value="15">
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-label">
+            <span>Fundamental Carrier Pitch</span>
+            <span class="slider-val" id="carrierFreqVal">200 Hz</span>
+          </div>
+          <input type="range" id="carrierFreq" min="140" max="320" step="5" value="200">
+        </div>
+
+        <div class="switch-row">
+          <span>Isochronic Pulse Mode (Laptop Speakers)</span>
+          <label class="switch">
+            <input type="checkbox" id="isochronicToggle">
+            <span class="slider-toggle"></span>
+          </label>
+        </div>
+
+        <div class="switch-row">
+          <span>Phase Architecture</span>
+          <span style="font-family: 'Cascadia Code', monospace; font-size: 0.75rem; color: var(--indigo);" id="phaseReadout">L: 200Hz | R: 210Hz</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pomo-deck">
+      <div class="pomo-left">
+        <div class="ring-wrap">
+          <svg viewBox="0 0 44 44">
+            <circle class="ring-bg" cx="22" cy="22" r="18"></circle>
+            <circle class="ring-fg" id="pomoRing" cx="22" cy="22" r="18"></circle>
+          </svg>
+        </div>
+        <div>
+          <div style="font-size: 0.85rem; font-weight: 700;">Lecture Focus Interval</div>
+          <div style="font-size: 0.74rem; color: var(--text-muted);">Auto-ducks noise floor & triggers 528Hz/880Hz chime</div>
+        </div>
+      </div>
+
+      <div class="pomo-time" id="timerDisplay">50:00</div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-ghost" id="timerToggle">Start Timer</button>
+        <button class="btn-ghost" id="timerMode">50m / 25m</button>
+      </div>
+    </div>
+
+    <div class="footer-keys">
+      <span><kbd>Space</kbd> Start / Stop Engine</span>
+      <span><kbd>M</kbd> Toggle Speech Carve</span>
+      <span><kbd>V</kbd> Toggle FFT / Oscilloscope</span>
+      <span><kbd>Click Canvas</kbd> Drag Vocal Notch Hz</span>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'niarb_focus_v4_state';
+    let audioCtx = null;
+    let isRunning = false;
+    let noiseNode = null;
+    let noiseGain = null;
+    let notchFilter = null;
+    let lfoOsc = null;
+    let lfoGain = null;
+    let leftOsc = null;
+    let rightOsc = null;
+    let isoModGain = null;
+    let isoOsc = null;
+    let beatGain = null;
+    let analyser = null;
+
+    let currentNoise = 'brown';
+    let currentBeat = 10;
+    let visMode = 'fft';
+    let activePreset = '';
+
+    const canvas = document.getElementById('scope');
+    const ctx2d = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx2d.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    function saveState() {
+      const state = {
+        noise: currentNoise,
+        beat: currentBeat,
+        noiseVol: document.getElementById('noiseVol').value,
+        notchFreq: document.getElementById('notchFreq').value,
+        vocalCarve: document.getElementById('vocalCarve').checked,
+        lfoToggle: document.getElementById('lfoToggle').checked,
+        beatVol: document.getElementById('beatVol').value,
+        carrierFreq: document.getElementById('carrierFreq').value,
+        isochronic: document.getElementById('isochronicToggle').checked,
+        visMode,
+        activePreset
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const s = JSON.parse(raw);
+          if (s.noise) currentNoise = s.noise;
+          if (typeof s.beat === 'number') currentBeat = s.beat;
+          if (s.noiseVol !== undefined) document.getElementById('noiseVol').value = s.noiseVol;
+          if (s.notchFreq !== undefined) document.getElementById('notchFreq').value = s.notchFreq;
+          if (s.vocalCarve !== undefined) document.getElementById('vocalCarve').checked = s.vocalCarve;
+          if (s.lfoToggle !== undefined) document.getElementById('lfoToggle').checked = s.lfoToggle;
+          if (s.beatVol !== undefined) document.getElementById('beatVol').value = s.beatVol;
+          if (s.carrierFreq !== undefined) document.getElementById('carrierFreq').value = s.carrierFreq;
+          if (s.isochronic !== undefined) document.getElementById('isochronicToggle').checked = s.isochronic;
+          if (s.visMode) visMode = s.visMode;
+          if (s.activePreset) activePreset = s.activePreset;
+        }
+      } catch (e) {}
+      syncUIFromState();
+      resizeCanvas();
+      drawIdleCanvas();
+    }
+
+    function syncUIFromState() {
+      document.querySelectorAll('#noiseTypeGroup .seg-btn').forEach(b => {
+        b.classList.toggle('selected', b.dataset.noise === currentNoise);
+      });
+      document.querySelectorAll('#beatGroup .seg-btn').forEach(b => {
+        b.classList.toggle('selected', parseFloat(b.dataset.beat) === currentBeat);
+      });
+      document.querySelectorAll('.preset-card').forEach(c => {
+        c.classList.toggle('active', c.dataset.preset === activePreset);
+      });
+
+      const nVol = document.getElementById('noiseVol').value;
+      const nFreq = document.getElementById('notchFreq').value;
+      const bVol = document.getElementById('beatVol').value;
+      const cFreq = parseFloat(document.getElementById('carrierFreq').value);
+      const carveOn = document.getElementById('vocalCarve').checked;
+      const isoOn = document.getElementById('isochronicToggle').checked;
+
+      document.getElementById('noiseVolVal').textContent = `${nVol}%`;
+      document.getElementById('notchFreqVal').textContent = `${nFreq} Hz`;
+      document.getElementById('beatVolVal').textContent = `${bVol}%`;
+      document.getElementById('carrierFreqVal').textContent = `${cFreq} Hz`;
+      document.getElementById('visModeBtn').textContent = visMode === 'fft' ? 'Mode: FFT Spectrum' : 'Mode: Oscilloscope';
+
+      const notchBadge = document.getElementById('notchBadge');
+      notchBadge.textContent = carveOn ? `CARVE @ ${nFreq}HZ` : 'FULL SPECTRUM';
+      notchBadge.style.color = carveOn ? 'var(--cyan)' : 'var(--text-muted)';
+
+      document.getElementById('beatStatus').textContent =
+        currentBeat === 0 ? 'BYPASSED' : `${currentBeat} HZ ${isoOn ? 'ISOCHRONIC' : 'BINAURAL'}`;
+
+      document.getElementById('phaseReadout').textContent =
+        currentBeat === 0
+          ? 'OSC STANDBY'
+          : isoOn
+            ? `MONO PULSE: ${cFreq}Hz @ ${currentBeat}Hz`
+            : `L: ${cFreq}Hz | R: ${cFreq + currentBeat}Hz`;
+    }
+
+    function createNoiseBuffer(ctx, type) {
+      const bufferSize = ctx.sampleRate * 3;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const output = buffer.getChannelData(0);
+      if (type === 'white') {
+        for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
+      } else if (type === 'pink') {
+        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          b0 = 0.99886 * b0 + white * 0.0555179;
+          b1 = 0.99332 * b1 + white * 0.0750759;
+          b2 = 0.96900 * b2 + white * 0.1538520;
+          b3 = 0.86650 * b3 + white * 0.3104856;
+          b4 = 0.55000 * b4 + white * 0.5329522;
+          b5 = -0.7616 * b5 - white * 0.0168980;
+          output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.04;
+          b6 = white * 0.115926;
+        }
+      } else {
+        let lastOut = 0.0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          output[i] = (lastOut + (0.02 * white)) / 1.02;
+          lastOut = output[i];
+          output[i] *= 3.5;
+        }
+      }
+      return buffer;
+    }
+
+    function startAudio() {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.84;
+      analyser.connect(audioCtx.destination);
+
+      notchFilter = audioCtx.createBiquadFilter();
+      lfoOsc = audioCtx.createOscillator();
+      lfoGain = audioCtx.createGain();
+      lfoOsc.frequency.value = 0.12;
+      lfoOsc.connect(lfoGain);
+      lfoGain.connect(notchFilter.frequency);
+      lfoOsc.start();
+
+      updateNotchFilter();
+
+      noiseGain = audioCtx.createGain();
+      noiseGain.gain.value = (document.getElementById('noiseVol').value / 100) * 0.5;
+      notchFilter.connect(noiseGain);
+      noiseGain.connect(analyser);
+
+      rebuildNoiseSource();
+
+      beatGain = audioCtx.createGain();
+      isoModGain = audioCtx.createGain();
+      isoOsc = audioCtx.createOscillator();
+      isoOsc.start();
+
+      const leftPan = audioCtx.createStereoPanner();
+      leftPan.pan.value = -1;
+      const rightPan = audioCtx.createStereoPanner();
+      rightPan.pan.value = 1;
+
+      leftOsc = audioCtx.createOscillator();
+      rightOsc = audioCtx.createOscillator();
+      leftOsc.connect(leftPan);
+      rightOsc.connect(rightPan);
+      leftPan.connect(isoModGain);
+      rightPan.connect(isoModGain);
+      isoModGain.connect(beatGain);
+      beatGain.connect(analyser);
+
+      leftOsc.start();
+      rightOsc.start();
+      updateBeatFrequencies();
+
+      isRunning = true;
+      document.getElementById('liveDot').classList.add('live');
+      drawVisualizer();
+    }
+
+    function rebuildNoiseSource() {
+      if (!audioCtx) return;
+      if (noiseNode) {
+        noiseNode.stop();
+        noiseNode.disconnect();
+      }
+      noiseNode = audioCtx.createBufferSource();
+      noiseNode.buffer = createNoiseBuffer(audioCtx, currentNoise);
+      noiseNode.loop = true;
+      noiseNode.connect(notchFilter);
+      noiseNode.start();
+    }
+
+    function updateNotchFilter() {
+      syncUIFromState();
+      if (!notchFilter || !audioCtx) {
+        if (!isRunning) drawIdleCanvas();
+        return;
+      }
+      const carve = document.getElementById('vocalCarve').checked;
+      const freq = parseFloat(document.getElementById('notchFreq').value);
+      const lfoOn = document.getElementById('lfoToggle').checked;
+      if (carve) {
+        notchFilter.type = 'notch';
+        notchFilter.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.03);
+        notchFilter.Q.setTargetAtTime(0.85, audioCtx.currentTime, 0.03);
+        lfoGain.gain.setTargetAtTime(lfoOn ? 140 : 0, audioCtx.currentTime, 0.05);
+      } else {
+        notchFilter.type = 'allpass';
+        lfoGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+      }
+    }
+
+    function updateBeatFrequencies() {
+      syncUIFromState();
+      if (!leftOsc || !rightOsc || !audioCtx) return;
+      const carrier = parseFloat(document.getElementById('carrierFreq').value);
+      const iso = document.getElementById('isochronicToggle').checked;
+      const vol = (document.getElementById('beatVol').value / 100) * 0.15;
+
+      if (currentBeat === 0) {
+        beatGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.04);
+      } else {
+        beatGain.gain.setTargetAtTime(vol, audioCtx.currentTime, 0.04);
+        leftOsc.frequency.setTargetAtTime(carrier, audioCtx.currentTime, 0.03);
+        rightOsc.frequency.setTargetAtTime(iso ? carrier : carrier + currentBeat, audioCtx.currentTime, 0.03);
+        isoOsc.frequency.setTargetAtTime(currentBeat, audioCtx.currentTime, 0.03);
+        try { isoOsc.disconnect(); } catch (e) {}
+        if (iso) {
+          isoModGain.gain.value = 0.5;
+          isoOsc.connect(isoModGain.gain);
+        } else {
+          isoModGain.gain.setTargetAtTime(1.0, audioCtx.currentTime, 0.03);
+        }
+      }
+    }
+
+    function playChime() {
+      if (!audioCtx) togglePower();
+      const now = audioCtx.currentTime;
+      if (noiseGain) {
+        const baseVol = (document.getElementById('noiseVol').value / 100) * 0.5;
+        noiseGain.gain.setTargetAtTime(baseVol * 0.25, now, 0.1);
+        noiseGain.gain.setTargetAtTime(baseVol, now + 3.0, 0.4);
+      }
+      [528, 880].forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.14);
+        g.gain.setValueAtTime(0.001, now + idx * 0.14);
+        g.gain.exponentialRampToValueAtTime(0.18, now + idx * 0.14 + 0.04);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.14 + 2.8);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start(now + idx * 0.14);
+        osc.stop(now + idx * 0.14 + 2.9);
+      });
+    }
+
+    function stopAudio() {
+      if (audioCtx) {
+        audioCtx.close();
+        audioCtx = null;
+      }
+      isRunning = false;
+      document.getElementById('liveDot').classList.remove('live');
+      drawIdleCanvas();
+    }
+
+    function togglePower() {
+      const btn = document.getElementById('powerBtn');
+      if (!isRunning) {
+        startAudio();
+        btn.textContent = 'DISENGAGE AUDIO';
+        btn.classList.add('running');
+      } else {
+        stopAudio();
+        btn.textContent = 'ENGAGE AUDIO';
+        btn.classList.remove('running');
+      }
+    }
+
+    document.getElementById('powerBtn').addEventListener('click', togglePower);
+    document.getElementById('testBellBtn').addEventListener('click', playChime);
+
+    document.getElementById('visModeBtn').addEventListener('click', () => {
+      visMode = visMode === 'fft' ? 'wave' : 'fft';
+      syncUIFromState();
+      saveState();
+    });
+
+    document.querySelectorAll('.preset-card').forEach(card => {
+      card.addEventListener('click', () => {
+        activePreset = card.dataset.preset;
+        if (activePreset === 'male') {
+          currentNoise = 'brown';
+          currentBeat = 10;
+          document.getElementById('notchFreq').value = 850;
+          document.getElementById('vocalCarve').checked = true;
+        } else if (activePreset === 'female') {
+          currentNoise = 'brown';
+          currentBeat = 10;
+          document.getElementById('notchFreq').value = 1650;
+          document.getElementById('vocalCarve').checked = true;
+        } else if (activePreset === 'stem') {
+          currentNoise = 'brown';
+          currentBeat = 18;
+          document.getElementById('notchFreq').value = 1200;
+          document.getElementById('vocalCarve').checked = true;
+        } else if (activePreset === 'cram') {
+          currentNoise = 'pink';
+          currentBeat = 40;
+          document.getElementById('vocalCarve').checked = false;
+        }
+        syncUIFromState();
+        if (isRunning) {
+          rebuildNoiseSource();
+          updateNotchFilter();
+          updateBeatFrequencies();
+        } else {
+          drawIdleCanvas();
+        }
+        saveState();
+      });
+    });
+
+    document.querySelectorAll('#noiseTypeGroup .seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activePreset = '';
+        currentNoise = btn.dataset.noise;
+        syncUIFromState();
+        if (isRunning) rebuildNoiseSource();
+        saveState();
+      });
+    });
+
+    document.querySelectorAll('#beatGroup .seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activePreset = '';
+        currentBeat = parseFloat(btn.dataset.beat);
+        syncUIFromState();
+        if (isRunning) updateBeatFrequencies();
+        saveState();
+      });
+    });
+
+    document.getElementById('noiseVol').addEventListener('input', (e) => {
+      document.getElementById('noiseVolVal').textContent = `${e.target.value}%`;
+      if (noiseGain && isRunning) {
+        noiseGain.gain.setTargetAtTime((e.target.value / 100) * 0.5, audioCtx.currentTime, 0.04);
+      }
+      saveState();
+    });
+
+    document.getElementById('notchFreq').addEventListener('input', () => {
+      activePreset = '';
+      updateNotchFilter();
+      saveState();
+    });
+
+    document.getElementById('beatVol').addEventListener('input', () => {
+      updateBeatFrequencies();
+      saveState();
+    });
+
+    document.getElementById('carrierFreq').addEventListener('input', () => {
+      updateBeatFrequencies();
+      saveState();
+    });
+
+    document.getElementById('vocalCarve').addEventListener('change', () => { updateNotchFilter(); saveState(); });
+    document.getElementById('lfoToggle').addEventListener('change', () => { updateNotchFilter(); saveState(); });
+    document.getElementById('isochronicToggle').addEventListener('change', () => { updateBeatFrequencies(); saveState(); });
+
+    // Interactive Canvas Click/Drag to Tune Notch Filter
+    let isDraggingCanvas = false;
+    function tuneNotchFromCanvasEvent(e) {
+      const rect = canvas.getBoundingClientRect();
+      const relX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      const maxDisplayHz = 4500;
+      const targetHz = Math.round((relX * maxDisplayHz) / 10) * 10;
+      const clampedHz = Math.max(600, Math.min(2500, targetHz));
+      document.getElementById('notchFreq').value = clampedHz;
+      document.getElementById('vocalCarve').checked = true;
+      activePreset = '';
+      updateNotchFilter();
+      saveState();
+    }
+
+    canvas.addEventListener('mousedown', (e) => { isDraggingCanvas = true; tuneNotchFromCanvasEvent(e); });
+    window.addEventListener('mousemove', (e) => { if (isDraggingCanvas) tuneNotchFromCanvasEvent(e); });
+    window.addEventListener('mouseup', () => { isDraggingCanvas = false; });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT') return;
+      if (e.code === 'Space') { e.preventDefault(); togglePower(); }
+      if (e.key.toLowerCase() === 'm') {
+        const el = document.getElementById('vocalCarve');
+        el.checked = !el.checked;
+        updateNotchFilter();
+        saveState();
+      }
+      if (e.key.toLowerCase() === 'v') {
+        visMode = visMode === 'fft' ? 'wave' : 'fft';
+        syncUIFromState();
+        saveState();
+      }
+    });
+
+    function drawGridAndNotch(w, h) {
+      ctx2d.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+      ctx2d.lineWidth = 1;
+      for (let x = 1; x < 9; x++) {
+        const gx = (w / 9) * x;
+        ctx2d.beginPath();
+        ctx2d.moveTo(gx, 0);
+        ctx2d.lineTo(gx, h);
+        ctx2d.stroke();
+      }
+      for (let y = 1; y < 4; y++) {
+        const gy = (h / 4) * y;
+        ctx2d.beginPath();
+        ctx2d.moveTo(0, gy);
+        ctx2d.lineTo(w, gy);
+        ctx2d.stroke();
+      }
+
+      if (document.getElementById('vocalCarve').checked) {
+        const maxDisplayHz = 4500;
+        const notchHz = parseFloat(document.getElementById('notchFreq').value);
+        const notchX = (notchHz / maxDisplayHz) * w;
+        const bandW = (550 / maxDisplayHz) * w;
+
+        const zoneGrad = ctx2d.createLinearGradient(notchX - bandW / 2, 0, notchX + bandW / 2, 0);
+        zoneGrad.addColorStop(0, 'rgba(244, 63, 94, 0)');
+        zoneGrad.addColorStop(0.5, 'rgba(244, 63, 94, 0.16)');
+        zoneGrad.addColorStop(1, 'rgba(244, 63, 94, 0)');
+        ctx2d.fillStyle = zoneGrad;
+        ctx2d.fillRect(notchX - bandW / 2, 0, bandW, h);
+
+        ctx2d.strokeStyle = '#f43f5e';
+        ctx2d.lineWidth = 1.5;
+        ctx2d.setLineDash([4, 4]);
+        ctx2d.beginPath();
+        ctx2d.moveTo(notchX, 0);
+        ctx2d.lineTo(notchX, h);
+        ctx2d.stroke();
+        ctx2d.setLineDash([]);
+
+        ctx2d.fillStyle = '#f43f5e';
+        ctx2d.font = '600 11px "Cascadia Code", Consolas, monospace';
+        ctx2d.fillText(`SPEECH NOTCH: ${notchHz} Hz`, Math.min(w - 155, Math.max(10, notchX + 8)), h - 10);
+      }
+    }
+
+    function drawIdleCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+      if (w <= 0 || h <= 0) return;
+      ctx2d.fillStyle = '#04060a';
+      ctx2d.fillRect(0, 0, w, h);
+      drawGridAndNotch(w, h);
+    }
+
+    function drawVisualizer() {
+      if (!isRunning || !analyser) return;
+      requestAnimationFrame(drawVisualizer);
+
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+      if (w <= 0 || h <= 0) return;
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+
+      ctx2d.fillStyle = '#04060a';
+      ctx2d.fillRect(0, 0, w, h);
+      drawGridAndNotch(w, h);
+
+      if (visMode === 'wave') {
+        analyser.getByteTimeDomainData(dataArray);
+        ctx2d.lineWidth = 2;
+        ctx2d.strokeStyle = '#38bdf8';
+        ctx2d.beginPath();
+        const sliceWidth = w / bufferLength;
+        let x = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          const v = dataArray[i] / 128.0;
+          const y = (v * h) / 2;
+          if (i === 0) ctx2d.moveTo(x, y);
+          else ctx2d.lineTo(x, y);
+          x += sliceWidth;
+        }
+        ctx2d.stroke();
+      } else {
+        analyser.getByteFrequencyData(dataArray);
+        const maxDisplayHz = 4500;
+        const nyquist = audioCtx.sampleRate / 2;
+        const maxBin = Math.floor((maxDisplayHz / nyquist) * bufferLength);
+
+        const grad = ctx2d.createLinearGradient(0, 20, 0, h);
+        grad.addColorStop(0, 'rgba(56, 189, 248, 0.55)');
+        grad.addColorStop(1, 'rgba(129, 140, 248, 0.05)');
+
+        ctx2d.beginPath();
+        ctx2d.moveTo(0, h);
+        for (let i = 0; i < maxBin; i++) {
+          const x = (i / maxBin) * w;
+          const y = h - (dataArray[i] / 255) * (h - 24);
+          ctx2d.lineTo(x, y);
+        }
+        ctx2d.lineTo(w, h);
+        ctx2d.closePath();
+        ctx2d.fillStyle = grad;
+        ctx2d.fill();
+
+        ctx2d.beginPath();
+        for (let i = 0; i < maxBin; i++) {
+          const x = (i / maxBin) * w;
+          const y = h - (dataArray[i] / 255) * (h - 24);
+          if (i === 0) ctx2d.moveTo(x, y);
+          else ctx2d.lineTo(x, y);
+        }
+        ctx2d.strokeStyle = '#38bdf8';
+        ctx2d.lineWidth = 1.8;
+        ctx2d.stroke();
+      }
+    }
+
+    let timerDuration = 50 * 60;
+    let timeRemaining = timerDuration;
+    let timerInterval = null;
+    const RING_CIRCUMFERENCE = 113;
+
+    function updateTimerUI() {
+      const m = String(Math.floor(timeRemaining / 60)).padStart(2, '0');
+      const s = String(timeRemaining % 60).padStart(2, '0');
+      document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+      const progress = 1 - timeRemaining / timerDuration;
+      document.getElementById('pomoRing').style.strokeDashoffset = progress * RING_CIRCUMFERENCE;
+    }
+
+    document.getElementById('timerToggle').addEventListener('click', (e) => {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        e.target.textContent = 'Start Timer';
+      } else {
+        e.target.textContent = 'Pause';
+        timerInterval = setInterval(() => {
+          if (timeRemaining > 0) {
+            timeRemaining--;
+            updateTimerUI();
+          } else {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            document.getElementById('timerToggle').textContent = 'Start Timer';
+            playChime();
+          }
+        }, 1000);
+      }
+    });
+
+    document.getElementById('timerMode').addEventListener('click', () => {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = null;
+      document.getElementById('timerToggle').textContent = 'Start Timer';
+      timerDuration = timerDuration === 50 * 60 ? 25 * 60 : 50 * 60;
+      timeRemaining = timerDuration;
+      updateTimerUI();
+    });
+
+    loadState();
+  </script>
+</body>
+</html>

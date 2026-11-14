@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NIARB v6 // Acoustic Reference Manual & Dual-Node DSP</title>
+  <title>NIARB v6.1 // Acoustic Reference Manual & Dual-Node DSP</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
@@ -66,7 +66,6 @@
       transition: background-color 0.2s ease, color 0.2s ease;
     }
 
-    /* Outer Layout with Left Sticky Index Rail */
     .workspace-shell {
       max-width: 1120px;
       margin: 0 auto;
@@ -168,13 +167,22 @@
       margin-top: 10px;
       font-size: 0.93rem;
       color: var(--ink-secondary);
-      max-width: 60ch;
+      max-width: 58ch;
     }
 
     .masthead-controls {
       display: flex;
       flex-direction: column;
       align-items: flex-end;
+      gap: 10px;
+      min-width: 280px;
+    }
+
+    .top-status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
       gap: 10px;
     }
 
@@ -187,6 +195,36 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
+    }
+
+    /* Top Master Output Volume Box */
+    .master-vol-box {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      background: var(--paper);
+      padding: 7px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .master-vol-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--ink);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .master-vol-label:hover {
+      color: var(--figma-blue);
+    }
+
+    .master-vol-box input[type="range"] {
+      flex: 1;
+      margin: 0;
     }
 
     .led {
@@ -204,6 +242,8 @@
     .btn-row {
       display: flex;
       gap: 8px;
+      width: 100%;
+      justify-content: flex-end;
       flex-wrap: wrap;
     }
 
@@ -472,7 +512,6 @@
       font-weight: 500;
     }
 
-    /* Direct Editable Inspector Readout */
     .inspector-badge {
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.74rem;
@@ -669,7 +708,7 @@
   <div class="workspace-shell">
     <!-- STICKY LEFT MARGIN INDEX RAIL -->
     <aside class="margin-rail">
-      <div class="rail-title">░ INDEX // v6.0</div>
+      <div class="rail-title">░ INDEX // v6.1</div>
       <a class="rail-link" data-scroll="secTopo">00. TOPOLOGY</a>
       <a class="rail-link" data-scroll="secSpectrum">01. CAD SPECTRUM</a>
       <a class="rail-link" data-scroll="colNoise">02. VOCAL EQ</a>
@@ -677,6 +716,7 @@
       <a class="rail-link" data-scroll="colTimer">04. INTERVAL</a>
       <a class="rail-link" data-scroll="secManual">05. FIELD MANUAL</a>
       <div class="rail-Telemetry">
+        <div>MASTER: <strong id="railMaster">80%</strong></div>
         <div>NOTCH: <strong id="railNotch">1200Hz</strong></div>
         <div>BOOST: <strong id="railPeak">2600Hz</strong></div>
         <div>BEAT: <strong id="railBeat">10Hz</strong></div>
@@ -686,11 +726,11 @@
 
     <!-- MAIN TECHNICAL REFERENCE SHEET -->
     <main class="manual-sheet">
-      <!-- MASTHEAD -->
+      <!-- MASTHEAD WITH TOP MASTER VOLUME SLIDER -->
       <header class="masthead">
         <div>
           <div class="meta-tag">
-            <span class="dither-block">░░</span> NIARB_DSP // DUAL-NODE PARAMETRIC LECTURE SYNTHESIZER [v6.0]
+            <span class="dither-block">░░</span> NIARB_DSP // DUAL-NODE PARAMETRIC LECTURE SYNTHESIZER [v6.1]
           </div>
           <h1>How to carve space for a human voice.</h1>
           <p class="masthead-sub">
@@ -698,10 +738,21 @@
           </p>
         </div>
         <div class="masthead-controls">
-          <div class="engine-state-pill">
-            <span id="ledDot" class="led"></span>
-            <span id="engineStateText">STATE: STANDBY</span>
+          <div class="top-status-row">
+            <div class="engine-state-pill">
+              <span id="ledDot" class="led"></span>
+              <span id="engineStateText">STATE: STANDBY</span>
+            </div>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--ink-muted);">[↑/↓] VOL</span>
           </div>
+
+          <!-- NEW TOP MASTER VOLUME SLIDER -->
+          <div class="master-vol-box">
+            <span class="master-vol-label" id="masterMuteLabel" title="Click to toggle Mute">MASTER OUT</span>
+            <input type="range" id="masterVol" min="0" max="100" value="80" aria-label="Master Output Volume">
+            <span class="inspector-badge" id="masterVolVal">80%</span>
+          </div>
+
           <div class="btn-row">
             <button id="themeBtn" class="tech-btn" title="Shortcut: D">Blueprint [D]</button>
             <button id="testBellBtn" class="tech-btn">Chime</button>
@@ -716,13 +767,11 @@
           <span class="dither-block">░</span> <strong>FIG_000</strong> [ WEB AUDIO DSP SIGNAL FLOW TOPOLOGY ]
         </div>
         <svg class="topo-svg" viewBox="0 0 860 52">
-          <!-- Signal Wires -->
           <line id="wire1" class="signal-wire" x1="125" y1="26" x2="215" y2="26"/>
           <line id="wire2" class="signal-wire" x1="355" y1="26" x2="435" y2="26"/>
           <line id="wire3" class="signal-wire" x1="575" y1="26" x2="660" y2="26"/>
-          <line id="wire4" class="signal-wire" x1="755" y1="26" x2="835" y2="26"/>
+          <line id="wire4" class="signal-wire" x1="755" y1="26" x2="785" y2="26"/>
 
-          <!-- Nodes -->
           <g transform="translate(8, 8)">
             <rect width="117" height="36" fill="var(--paper-card)" stroke="var(--line-strong)"/>
             <text x="10" y="15" font-family="JetBrains Mono" font-size="8" fill="var(--ink-muted)">01 // SOURCE</text>
@@ -738,7 +787,7 @@
           <g transform="translate(435, 8)">
             <rect width="140" height="36" fill="var(--paper-card)" stroke="var(--figma-purple)"/>
             <text x="10" y="15" font-family="JetBrains Mono" font-size="8" fill="var(--figma-purple)">03 // NODE_02 CLARITY</text>
-            <text id="topoPeakTxt" x="10" y="28" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="var(--ink)">2600 Hz (+4.5dB)</text>
+            <text id="topoPeakTxt" x="10" y="28" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="var(--ink)">2600 Hz (-4.5dB)</text>
           </g>
 
           <g transform="translate(660, 8)">
@@ -749,8 +798,8 @@
 
           <g transform="translate(785, 8)">
             <rect width="68" height="36" fill="var(--ink)" stroke="var(--line-strong)"/>
-            <text x="10" y="15" font-family="JetBrains Mono" font-size="8" fill="var(--paper)">05 // DAC</text>
-            <text x="10" y="28" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="var(--paper)">OUT 1/2</text>
+            <text x="8" y="15" font-family="JetBrains Mono" font-size="8" fill="var(--paper)">05 // MASTER</text>
+            <text id="topoMasterTxt" x="8" y="28" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="var(--paper)">OUT 80%</text>
           </g>
         </svg>
       </section>
@@ -906,7 +955,7 @@
 
           <div class="toggle-line">
             <span>Shortcuts</span>
-            <span style="font-size: 0.73rem;"><kbd>Space</kbd> Audio &bull; <kbd>M</kbd> Carve &bull; <kbd>V</kbd> Scope &bull; <kbd>D</kbd> Theme</span>
+            <span style="font-size: 0.73rem;"><kbd>Space</kbd> Audio &bull; <kbd>↑/↓</kbd> Master Vol &bull; <kbd>M</kbd> Carve &bull; <kbd>D</kbd> Theme</span>
           </div>
         </div>
       </section>
@@ -931,11 +980,10 @@
         <div class="chapter-divider">╌╌╌╌ CHAPTER 01 // INTERACTIVE USER MANUAL &amp; ACOUSTIC THEORY ╌╌╌╌</div>
         <h2>Why two filter nodes beat flat white noise.</h2>
         <p class="chapter-lead">
-          Human speech intelligibility depends on two distinct acoustic regions: the <strong>Fundamental &amp; Vowel Formants (600 Hz – 1,800 Hz)</strong> which carry vocal warmth, and the <strong>Consonant Sibilance Band (2,000 Hz – 3,500 Hz)</strong> which distinguishes <em>"p", "t", "k",</em> and <em>"s"</em>. NIARB v6 lets you manipulate both nodes directly on the CAD spectrum.
+          Human speech intelligibility depends on two distinct acoustic regions: the <strong>Fundamental &amp; Vowel Formants (600 Hz – 1,800 Hz)</strong> which carry vocal warmth, and the <strong>Consonant Sibilance Band (2,000 Hz – 3,500 Hz)</strong> which distinguishes <em>"p", "t", "k",</em> and <em>"s"</em>. NIARB v6.1 lets you manipulate both nodes directly on the CAD spectrum while controlling overall loudness from the top Master Output fader.
         </p>
 
         <div class="manual-grid">
-          <!-- FIG_002: FORMANT SIMULATOR -->
           <div class="diagram-card">
             <div>
               <div class="fig-label" style="margin-bottom: 6px;">
@@ -968,7 +1016,6 @@
             </div>
           </div>
 
-          <!-- FIG_003: BINAURAL VS ISOCHRONIC -->
           <div class="diagram-card">
             <div>
               <div class="fig-label" style="margin-bottom: 6px;">
@@ -1036,6 +1083,8 @@
     const STORAGE_KEY = 'niarb_makingsoftware_v6';
     let audioCtx = null;
     let isRunning = false;
+    let masterGain = null;
+    let preMuteMasterVol = 80;
     let noiseNode = null;
     let noiseGain = null;
     let notchFilter = null;
@@ -1082,6 +1131,7 @@
 
     function saveState() {
       const state = {
+        masterVol: document.getElementById('masterVol').value,
         noise: currentNoise,
         beat: currentBeat,
         noiseVol: document.getElementById('noiseVol').value,
@@ -1104,6 +1154,7 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const s = JSON.parse(raw);
+          if (s.masterVol !== undefined) document.getElementById('masterVol').value = s.masterVol;
           if (s.noise) currentNoise = s.noise;
           if (typeof s.beat === 'number') currentBeat = s.beat;
           if (s.noiseVol !== undefined) document.getElementById('noiseVol').value = s.noiseVol;
@@ -1134,6 +1185,7 @@
         c.classList.toggle('active', c.dataset.preset === activePreset);
       });
 
+      const mVol = parseInt(document.getElementById('masterVol').value, 10);
       const nVol = document.getElementById('noiseVol').value;
       const nFreq = document.getElementById('notchFreq').value;
       const pFreq = document.getElementById('peakFreq').value;
@@ -1142,6 +1194,8 @@
       const carveOn = document.getElementById('vocalCarve').checked;
       const isoOn = document.getElementById('isochronicToggle').checked;
 
+      document.getElementById('masterVolVal').textContent = mVol === 0 ? 'MUTE' : `${mVol}%`;
+      document.getElementById('masterMuteLabel').textContent = mVol === 0 ? 'MUTED (CLICK)' : 'MASTER OUT';
       document.getElementById('noiseVolVal').textContent = `${nVol}%`;
       document.getElementById('notchFreqVal').textContent = `${nFreq} Hz`;
       document.getElementById('peakFreqVal').textContent = `${pFreq} Hz`;
@@ -1154,12 +1208,13 @@
       document.getElementById('node1Pill').textContent = carveOn ? `NODE_01: ${nFreq} Hz` : `NODE_01: BYP`;
       document.getElementById('node2Pill').textContent = carveOn ? `NODE_02: ${pFreq} Hz` : `NODE_02: BYP`;
 
-      // Update Topology SVG & Left Margin Rail
       document.getElementById('topoNoiseTxt').textContent = `${currentNoise.toUpperCase()}_NOISE`;
       document.getElementById('topoNotchTxt').textContent = carveOn ? `${nFreq} Hz (-18dB)` : `BYPASSED`;
-      document.getElementById('topoPeakTxt').textContent = carveOn ? `${pFreq} Hz (+4.5dB)` : `BYPASSED`;
+      document.getElementById('topoPeakTxt').textContent = carveOn ? `${pFreq} Hz (-4.5dB)` : `BYPASSED`;
       document.getElementById('topoBeatTxt').textContent = currentBeat === 0 ? `OFF` : `${currentBeat}Hz${isoOn ? 'ISO' : 'BIN'}`;
+      document.getElementById('topoMasterTxt').textContent = mVol === 0 ? `MUTED` : `OUT ${mVol}%`;
 
+      document.getElementById('railMaster').textContent = mVol === 0 ? 'MUTE' : `${mVol}%`;
       document.getElementById('railNotch').textContent = `${nFreq}Hz`;
       document.getElementById('railPeak').textContent = `${pFreq}Hz`;
       document.getElementById('railBeat').textContent = `${currentBeat}Hz`;
@@ -1205,10 +1260,15 @@
 
     function startAudio() {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = document.getElementById('masterVol').value / 100;
+
       analyser = audioCtx.createAnalyser();
       analyser.fftSize = 2048;
       analyser.smoothingTimeConstant = 0.84;
-      analyser.connect(audioCtx.destination);
+
+      analyser.connect(masterGain);
+      masterGain.connect(audioCtx.destination);
 
       notchFilter = audioCtx.createBiquadFilter();
       peakFilter = audioCtx.createBiquadFilter();
@@ -1260,6 +1320,15 @@
       drawVisualizer();
     }
 
+    function updateMasterGain() {
+      syncUIFromState();
+      if (masterGain && isRunning && audioCtx) {
+        const val = parseFloat(document.getElementById('masterVol').value) / 100;
+        masterGain.gain.setTargetAtTime(val, audioCtx.currentTime, 0.03);
+      }
+      saveState();
+    }
+
     function rebuildNoiseSource() {
       if (!audioCtx) return;
       if (noiseNode) {
@@ -1292,7 +1361,7 @@
         peakFilter.type = 'peaking';
         peakFilter.frequency.setTargetAtTime(pFreq, audioCtx.currentTime, 0.03);
         peakFilter.Q.setTargetAtTime(1.2, audioCtx.currentTime, 0.03);
-        peakFilter.gain.setTargetAtTime(4.5, audioCtx.currentTime, 0.03);
+        peakFilter.gain.setTargetAtTime(-4.5, audioCtx.currentTime, 0.03);
 
         lfoGain.gain.setTargetAtTime(lfoOn ? 140 : 0, audioCtx.currentTime, 0.05);
       } else {
@@ -1343,7 +1412,7 @@
         g.gain.exponentialRampToValueAtTime(0.18, now + idx * 0.14 + 0.04);
         g.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.14 + 2.8);
         osc.connect(g);
-        g.connect(audioCtx.destination);
+        g.connect(masterGain || audioCtx.destination);
         osc.start(now + idx * 0.14);
         osc.stop(now + idx * 0.14 + 2.9);
       });
@@ -1376,6 +1445,20 @@
 
     document.getElementById('powerBtn').addEventListener('click', togglePower);
     document.getElementById('testBellBtn').addEventListener('click', playChime);
+    document.getElementById('masterVol').addEventListener('input', updateMasterGain);
+
+    document.getElementById('masterMuteLabel').addEventListener('click', () => {
+      const slider = document.getElementById('masterVol');
+      const current = parseInt(slider.value, 10);
+      if (current > 0) {
+        preMuteMasterVol = current;
+        slider.value = 0;
+      } else {
+        slider.value = preMuteMasterVol || 80;
+      }
+      updateMasterGain();
+    });
+
     document.getElementById('themeBtn').addEventListener('click', () => {
       setTheme(currentTheme === 'paper' ? 'blueprint' : 'paper');
     });
@@ -1483,7 +1566,7 @@
     document.getElementById('isochronicToggle').addEventListener('change', () => { updateBeatFrequencies(); saveState(); });
 
     // Dual-Node CAD Canvas Dragging & Cursor Crosshair Telemetry
-    let activeDragNode = null; // 'node1' or 'node2'
+    let activeDragNode = null;
     const RULER_LEFT = 32;
     const RULER_TOP = 20;
     const MAX_HZ = 4500;
@@ -1551,6 +1634,18 @@
         e.preventDefault();
         togglePower();
       }
+      if (e.code === 'ArrowUp') {
+        e.preventDefault();
+        const s = document.getElementById('masterVol');
+        s.value = Math.min(100, parseInt(s.value, 10) + 5);
+        updateMasterGain();
+      }
+      if (e.code === 'ArrowDown') {
+        e.preventDefault();
+        const s = document.getElementById('masterVol');
+        s.value = Math.max(0, parseInt(s.value, 10) - 5);
+        updateMasterGain();
+      }
       if (e.key.toLowerCase() === 'm') {
         const el = document.getElementById('vocalCarve');
         el.checked = !el.checked;
@@ -1588,7 +1683,6 @@
       const plotW = w - RULER_LEFT;
       const plotH = h - RULER_TOP;
 
-      // Grid lines
       ctx2d.strokeStyle = c.line;
       ctx2d.lineWidth = 1;
       for (let hz = 500; hz < MAX_HZ; hz += 500) {
@@ -1606,7 +1700,6 @@
         ctx2d.stroke();
       }
 
-      // Dual-Node Parametric Spline
       if (document.getElementById('vocalCarve').checked) {
         const n1Hz = parseFloat(document.getElementById('notchFreq').value);
         const n2Hz = parseFloat(document.getElementById('peakFreq').value);
@@ -1616,7 +1709,6 @@
         const y1 = RULER_TOP + plotH * 0.78;
         const y2 = RULER_TOP + plotH * 0.56;
 
-        // Redline Distance Dimension between Node 1 and Node 2
         ctx2d.strokeStyle = c.orange;
         ctx2d.setLineDash([2, 2]);
         ctx2d.beginPath();
@@ -1630,7 +1722,6 @@
         ctx2d.font = '500 9px "JetBrains Mono", monospace';
         ctx2d.fillText(`Δ ${deltaHz} Hz`, (x1 + x2) / 2 - 24, RULER_TOP + 14);
 
-        // Continuous 2-Node Transfer Curve
         ctx2d.strokeStyle = c.blue;
         ctx2d.lineWidth = 2;
         ctx2d.beginPath();
@@ -1643,7 +1734,6 @@
         ctx2d.lineTo(w, baseY);
         ctx2d.stroke();
 
-        // Node 1 Handle (Blue)
         ctx2d.strokeStyle = c.blue;
         ctx2d.lineWidth = 1.2;
         ctx2d.beginPath();
@@ -1661,7 +1751,6 @@
         ctx2d.fillRect(x1 - 4, y1 - 4, 8, 8);
         ctx2d.strokeRect(x1 - 4, y1 - 4, 8, 8);
 
-        // Node 2 Handle (Purple)
         ctx2d.strokeStyle = c.purple;
         ctx2d.beginPath();
         ctx2d.moveTo(x2 - 24, y2);
@@ -1672,7 +1761,6 @@
         ctx2d.strokeRect(x2 - 4, y2 - 4, 8, 8);
       }
 
-      // Live Cursor Crosshair Projection
       if (mouseCanvasPos && mouseCanvasPos.x > RULER_LEFT && mouseCanvasPos.y > RULER_TOP) {
         ctx2d.strokeStyle = c.muted;
         ctx2d.lineWidth = 0.8;
@@ -1686,7 +1774,6 @@
         ctx2d.setLineDash([]);
       }
 
-      // Top & Left Figma CAD Rulers
       ctx2d.fillStyle = c.ruler;
       ctx2d.fillRect(0, 0, w, RULER_TOP);
       ctx2d.fillRect(0, 0, RULER_LEFT, h);
@@ -1880,7 +1967,6 @@
       document.getElementById('fig3BotLabel').textContent = 'CH_02: AMPLITUDE PULSE (ISOCHRONIC)';
     });
 
-    // Scroll & Highlight Handlers
     document.querySelectorAll('[data-focus-target], [data-scroll]').forEach(el => {
       el.addEventListener('click', () => {
         const id = el.dataset.focusTarget || el.dataset.scroll;

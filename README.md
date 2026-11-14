@@ -1,15 +1,37 @@
-# Niarb
+# Niarb // Acoustic Reference Manual & Lecture DSP (v5.0)
 
-**Niarb** is a zero-dependency Web Audio DSP synthesizer designed for students and engineers listening to lectures. Standard white, pink, or brown noise masks the human vocal frequency range (300 Hz – 3,000 Hz), making instructors harder to understand. Niarb uses a real-time tunable band-reject notch filter to carve out the lecturer's vocal fundamental and formant frequencies while masking surrounding environmental distractions.
+**Niarb** is an open-source, zero-dependency Web Audio DSP workstation and interactive acoustic manual designed in the *Making Software* and *Figma Vector Blueprint* editorial aesthetic.
 
-## Core Capabilities
+Standard white, pink, or brown noise masks the human vocal frequency range (300 Hz – 3,000 Hz), forcing the brain's auditory cortex to strain to decode speech consonants and formants. Niarb uses a real-time tunable Biquad band-reject notch filter to carve out the instructor's vocal formant band while masking ambient environmental noise.
 
-- **Tunable Vocal-Notch Carve (600 Hz – 2500 Hz):** Interactive Biquad band-reject filter with a 0.12 Hz anti-fatigue LFO sweep. Click or drag directly on the FFT spectrum canvas to tune the notch center.
-- **Procedural Noise Engine:** Real-time Brownian, Pink ($1/f$), and White noise synthesis in browser memory.
-- **Binaural & Isochronic Neural Entrainment:** Supports stereo Binaural Beats (Alpha 10 Hz, Beta 18 Hz, Gamma 40 Hz) for headphones and amplitude-modulated Isochronic Pulses for laptop speakers.
-- **140Hz Hi-DPI Spectrum & Oscilloscope:** 2048-point FFT analyzer with visual speech-notch reticle.
-- **Pomodoro Lecture Timer:** 50-minute and 25-minute focus blocks with automatic noise floor ducking and a synthesized 528 Hz / 880 Hz harmonic bell chime.
+---
+
+## Technical Features
+
+- **FIG_001 Real-Time 2048-pt FFT Spectrum & Bézier Notch Node:** Interactive canvas with Figma vector coordinates, tangent handles, and direct click/drag frequency tuning (600 Hz – 2,500 Hz).
+- **Procedural Noise Engine:** Real-time Brownian (-6 dB/oct), Pink (-3 dB/oct), and White (flat) acoustic masking synthesized directly in browser memory.
+- **Anti-Fatigue LFO Modulation (0.12 Hz):** Subtle ±140 Hz oscillator drift that prevents auditory habituation over long study blocks.
+- **Neural Phase Entrainment (Binaural & Isochronic):**
+  - **Binaural Beats:** Dual-channel phase interference (Alpha 10 Hz, Beta 18 Hz, Gamma 40 Hz) over a tunable fundamental carrier (140 Hz – 320 Hz) for headphones.
+  - **Isochronic Pulse Mode:** Amplitude-modulated pulses for laptop and external stereo speakers without phase cancellation.
+- **FIG_002 Speech Formant Collision Simulator:** Interactive pedagogical simulator demonstrating Signal-to-Noise Ratio (SNR) clarity improvements when carving acoustic space for human speech.
+- **FIG_003 Animated Phase Math Engine:** Real-time SVG vector rendering of carrier wave interference envelopes versus amplitude-rectified pulses.
+- **Pomodoro Lecture Clock:** 50-minute and 25-minute focus intervals featuring automatic noise floor ducking (25%) and a synthesized 528 Hz / 880 Hz harmonic chime.
+- **Hardware Presets & Local State:** One-click presets for Male Lecturers (850 Hz), Female Lecturers (1650 Hz), STEM Problem Sets (1200 Hz Beta), and Deep Cramming (Pink Gamma), persisted via `localStorage`.
+
+---
+
+## Keyboard Shortcuts
+
+| Key | Action |
+| :--- | :--- |
+| <kbd>Space</kbd> | Engage / Disengage Audio Engine |
+| <kbd>M</kbd> | Toggle Speech Band Carve Filter (Biquad Notch) |
+| <kbd>V</kbd> | Toggle Visualizer Mode (FFT Spectrum / Oscilloscope) |
+| <kbd>Click / Drag Canvas</kbd> | Reposition Vocal Notch Center Frequency ($f_0$) |
+
+---
 
 ## Usage
 
-Open `index.html` or `lecture-focus.html` directly in any modern browser.
+Run locally by opening `index.html` or `lecture-focus.html` in any modern web browser, or view live on GitHub Pages.

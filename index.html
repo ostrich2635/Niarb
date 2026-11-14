@@ -1,31 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="paper">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NIARB // Acoustic Reference Manual & Lecture DSP</title>
+  <title>NIARB v6 // Acoustic Reference Manual & Dual-Node DSP</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
   <style>
-    :root {
+    :root[data-theme="paper"] {
+      --bg-outer: #ECEAE4;
       --paper: #F7F6F2;
       --paper-elevated: #EFECE6;
       --paper-card: #FAF9F5;
+      --ruler-bg: #EAE7DF;
       --ink: #141413;
       --ink-secondary: #52514E;
       --ink-muted: #85837D;
       --line: #D8D5CD;
       --line-strong: #141413;
+      --grid-dot: rgba(20, 20, 19, 0.14);
       --figma-blue: #0D99FF;
       --figma-blue-fill: rgba(13, 153, 255, 0.08);
       --figma-orange: #F24E1E;
-      --figma-orange-fill: rgba(242, 78, 30, 0.09);
       --figma-green: #14AE5C;
       --figma-purple: #9747FF;
-      --font-serif: 'Newsreader', Georgia, serif;
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+      --fft-fill: rgba(20, 20, 19, 0.09);
+    }
+
+    :root[data-theme="blueprint"] {
+      --bg-outer: #090B0E;
+      --paper: #0F1217;
+      --paper-elevated: #161B22;
+      --paper-card: #12161C;
+      --ruler-bg: #0B0E12;
+      --ink: #E6EDF3;
+      --ink-secondary: #9BA4B0;
+      --ink-muted: #636C76;
+      --line: #262C36;
+      --line-strong: #485262;
+      --grid-dot: rgba(56, 189, 248, 0.14);
+      --figma-blue: #38BDF8;
+      --figma-blue-fill: rgba(56, 189, 248, 0.11);
+      --figma-orange: #FF6B4A;
+      --figma-green: #2EA043;
+      --figma-purple: #B392F0;
+      --fft-fill: rgba(56, 189, 248, 0.12);
     }
 
     * {
@@ -35,28 +55,83 @@
     }
 
     body {
-      background-color: var(--paper);
-      background-image: radial-gradient(rgba(20, 20, 19, 0.12) 1px, transparent 1px);
+      background-color: var(--bg-outer);
+      background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
       background-size: 20px 20px;
       color: var(--ink);
-      font-family: var(--font-sans);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       line-height: 1.5;
-      padding: 32px 16px 80px;
+      padding: 28px 16px 80px;
       -webkit-font-smoothing: antialiased;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    /* Outer Layout with Left Sticky Index Rail */
+    .workspace-shell {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 155px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .margin-rail {
+      position: sticky;
+      top: 24px;
+      border: 1px solid var(--line-strong);
+      background: var(--paper-card);
+      padding: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.06);
+    }
+
+    .rail-title {
+      color: var(--ink-muted);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .rail-link {
+      color: var(--ink-secondary);
+      text-decoration: none;
+      padding: 4px 6px;
+      border-left: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+
+    .rail-link:hover {
+      color: var(--figma-blue);
+      border-left-color: var(--figma-blue);
+      background: var(--figma-blue-fill);
+    }
+
+    .rail-Telemetry {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--line);
+      color: var(--ink-muted);
+      font-size: 0.65rem;
+      line-height: 1.6;
     }
 
     .manual-sheet {
-      max-width: 960px;
-      margin: 0 auto;
       background: var(--paper);
       border: 1.5px solid var(--line-strong);
-      box-shadow: 8px 8px 0px rgba(20, 20, 19, 0.08);
+      box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.1);
     }
 
-    /* Top Technical Masthead */
+    /* Top Masthead */
     .masthead {
       border-bottom: 1.5px solid var(--line-strong);
-      padding: 28px 32px;
+      padding: 26px 32px;
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 24px;
@@ -65,7 +140,7 @@
     }
 
     .meta-tag {
-      font-family: var(--font-mono);
+      font-family: 'JetBrains Mono', monospace;
       font-size: 0.72rem;
       letter-spacing: 0.06em;
       text-transform: uppercase;
@@ -82,19 +157,18 @@
     }
 
     .masthead h1 {
-      font-family: var(--font-serif);
+      font-family: 'Newsreader', Georgia, serif;
       font-weight: 400;
-      font-size: 2.65rem;
+      font-size: 2.55rem;
       line-height: 1.08;
       letter-spacing: -0.02em;
-      color: var(--ink);
     }
 
     .masthead-sub {
       margin-top: 10px;
-      font-size: 0.95rem;
+      font-size: 0.93rem;
       color: var(--ink-secondary);
-      max-width: 58ch;
+      max-width: 60ch;
     }
 
     .masthead-controls {
@@ -105,8 +179,8 @@
     }
 
     .engine-state-pill {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.71rem;
       padding: 4px 10px;
       border: 1px solid var(--line-strong);
       background: var(--paper);
@@ -124,19 +198,20 @@
 
     .led.active {
       background: var(--figma-green);
-      box-shadow: 0 0 0 3px rgba(20, 174, 92, 0.2);
+      box-shadow: 0 0 0 3px rgba(20, 174, 92, 0.25);
     }
 
     .btn-row {
       display: flex;
       gap: 8px;
+      flex-wrap: wrap;
     }
 
     .tech-btn {
-      font-family: var(--font-mono);
-      font-size: 0.76rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
       font-weight: 500;
-      padding: 9px 14px;
+      padding: 8px 13px;
       border: 1px solid var(--line-strong);
       background: var(--paper);
       color: var(--ink);
@@ -163,7 +238,36 @@
       color: #fff;
     }
 
-    /* Figma Preset Strip */
+    /* FIG_000: Interactive Signal Topology Patchbay */
+    .topology-strip {
+      border-bottom: 1.5px solid var(--line-strong);
+      padding: 14px 32px;
+      background: var(--paper);
+    }
+
+    .topo-svg {
+      width: 100%;
+      height: 56px;
+      display: block;
+    }
+
+    .signal-wire {
+      stroke: var(--ink-muted);
+      stroke-width: 1.5;
+      stroke-dasharray: 4 4;
+      fill: none;
+    }
+
+    .signal-wire.live {
+      stroke: var(--figma-blue);
+      animation: flowDash 0.8s linear infinite;
+    }
+
+    @keyframes flowDash {
+      to { stroke-dashoffset: -16; }
+    }
+
+    /* Preset Bar */
     .preset-bar {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -171,22 +275,20 @@
     }
 
     .preset-cell {
-      padding: 14px 18px;
+      padding: 13px 18px;
       border-right: 1px solid var(--line);
-      background: var(--paper);
+      background: var(--paper-card);
       cursor: pointer;
       text-align: left;
-      transition: background 0.12s ease;
       position: relative;
+      color: var(--ink);
+      border-top: none;
+      border-bottom: none;
+      border-left: none;
     }
 
-    .preset-cell:last-child {
-      border-right: none;
-    }
-
-    .preset-cell:hover {
-      background: var(--paper-elevated);
-    }
+    .preset-cell:last-child { border-right: none; }
+    .preset-cell:hover { background: var(--paper-elevated); }
 
     .preset-cell.active {
       background: var(--figma-blue-fill);
@@ -194,41 +296,27 @@
       outline-offset: -1.5px;
     }
 
-    .preset-cell.active::before,
-    .preset-cell.active::after {
-      content: "";
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      background: #fff;
-      border: 1.5px solid var(--figma-blue);
-    }
-
-    .preset-cell.active::before { top: -3px; left: -3px; }
-    .preset-cell.active::after { bottom: -3px; right: -3px; }
-
     .preset-idx {
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.66rem;
       color: var(--ink-muted);
       display: block;
-      margin-bottom: 2px;
     }
 
     .preset-name {
       font-weight: 600;
-      font-size: 0.85rem;
-      color: var(--ink);
+      font-size: 0.84rem;
+      margin-top: 2px;
     }
 
     .preset-spec {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
       color: var(--figma-blue);
       margin-top: 3px;
     }
 
-    /* FIG_001 Spectrum Canvas Section */
+    /* FIG_001: CAD Artboard with Top/Left Rulers */
     .figure-section {
       border-bottom: 1.5px solid var(--line-strong);
       padding: 20px 32px 24px;
@@ -245,32 +333,35 @@
     }
 
     .fig-label {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      color: var(--ink);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
-    .figma-dimension-pill {
+    .figma-pill {
       background: var(--figma-blue);
       color: #fff;
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.67rem;
       padding: 2px 6px;
       border-radius: 2px;
       font-weight: 500;
     }
 
-    .canvas-frame {
+    .figma-pill.purple {
+      background: var(--figma-purple);
+    }
+
+    .cad-artboard {
       position: relative;
       border: 1px solid var(--line-strong);
       background: var(--paper);
-      height: 190px;
+      height: 225px;
     }
 
-    /* Corner Figma Node Squares on Canvas */
     .node-handle {
       position: absolute;
       width: 7px;
@@ -289,13 +380,13 @@
       width: 100%;
       height: 100%;
       display: block;
-      cursor: ew-resize;
+      cursor: crosshair;
     }
 
     .fig-caption {
       margin-top: 10px;
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.71rem;
       color: var(--ink-secondary);
       display: flex;
       justify-content: space-between;
@@ -303,7 +394,7 @@
       gap: 8px;
     }
 
-    /* Two-Column Hardware Control Matrix */
+    /* Two-Column Control Matrix */
     .control-matrix {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -315,17 +406,12 @@
       border-right: 1px solid var(--line-strong);
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 16px;
       transition: background-color 0.25s ease;
     }
 
-    .matrix-col:last-child {
-      border-right: none;
-    }
-
-    .matrix-col.highlight-flash {
-      background-color: rgba(13, 153, 255, 0.12);
-    }
+    .matrix-col:last-child { border-right: none; }
+    .matrix-col.highlight-flash { background-color: var(--figma-blue-fill); }
 
     .col-header {
       display: flex;
@@ -336,14 +422,14 @@
     }
 
     .col-title {
-      font-family: var(--font-serif);
+      font-family: 'Newsreader', Georgia, serif;
       font-size: 1.3rem;
       font-weight: 500;
     }
 
     .col-index {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.71rem;
       color: var(--ink-muted);
     }
 
@@ -355,8 +441,8 @@
     }
 
     .seg-item {
-      font-family: var(--font-mono);
-      font-size: 0.74rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.73rem;
       padding: 8px 6px;
       border: none;
       border-right: 1px solid var(--line);
@@ -365,10 +451,7 @@
       cursor: pointer;
     }
 
-    .seg-item:last-child {
-      border-right: none;
-    }
-
+    .seg-item:last-child { border-right: none; }
     .seg-item.selected {
       background: var(--ink);
       color: var(--paper);
@@ -378,24 +461,28 @@
     .param-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
     }
 
     .param-label {
       display: flex;
       justify-content: space-between;
-      font-size: 0.82rem;
+      align-items: center;
+      font-size: 0.81rem;
       font-weight: 500;
     }
 
-    .param-readout {
-      font-family: var(--font-mono);
-      font-size: 0.76rem;
+    /* Direct Editable Inspector Readout */
+    .inspector-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
       color: var(--figma-blue);
+      background: var(--paper-card);
+      border: 1px solid var(--line);
+      padding: 1px 6px;
       font-weight: 600;
     }
 
-    /* Technical CAD / Figma Range Sliders */
     input[type="range"] {
       -webkit-appearance: none;
       appearance: none;
@@ -411,7 +498,7 @@
       appearance: none;
       width: 12px;
       height: 12px;
-      background: #fff;
+      background: var(--paper);
       border: 2px solid var(--figma-blue);
       cursor: grab;
       box-shadow: 1px 1px 0 var(--ink);
@@ -421,9 +508,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-top: 10px;
+      padding-top: 9px;
       border-top: 1px solid var(--line);
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       color: var(--ink-secondary);
     }
 
@@ -431,16 +518,16 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-family: var(--font-mono);
-      font-size: 0.74rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.73rem;
       cursor: pointer;
       color: var(--ink);
     }
 
     .blueprint-check input {
       accent-color: var(--figma-blue);
-      width: 15px;
-      height: 15px;
+      width: 14px;
+      height: 14px;
       cursor: pointer;
     }
 
@@ -457,56 +544,54 @@
     }
 
     .timer-clock {
-      font-family: var(--font-mono);
-      font-size: 1.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.7rem;
       font-weight: 700;
-      letter-spacing: -0.02em;
       color: var(--ink);
       background: var(--paper);
       padding: 4px 14px;
       border: 1px solid var(--line-strong);
     }
 
-    /* Interactive User Manual Section (Making Software Chapter Style) */
+    /* Interactive User Manual Chapter */
     .manual-chapter {
-      padding: 44px 32px 48px;
+      padding: 40px 32px 48px;
       background: var(--paper);
     }
 
     .chapter-divider {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.73rem;
       color: var(--ink-muted);
-      margin-bottom: 16px;
-      letter-spacing: 0.1em;
+      margin-bottom: 14px;
+      letter-spacing: 0.08em;
     }
 
     .manual-chapter h2 {
-      font-family: var(--font-serif);
-      font-size: 2.1rem;
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 2.05rem;
       font-weight: 400;
       margin-bottom: 12px;
-      letter-spacing: -0.015em;
     }
 
     .chapter-lead {
-      font-size: 1.02rem;
+      font-size: 0.98rem;
       color: var(--ink-secondary);
-      max-width: 66ch;
-      margin-bottom: 32px;
+      max-width: 68ch;
+      margin-bottom: 28px;
     }
 
     .manual-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 28px;
-      margin-bottom: 36px;
+      gap: 24px;
+      margin-bottom: 32px;
     }
 
     .diagram-card {
       border: 1px solid var(--line-strong);
       background: var(--paper-card);
-      padding: 20px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -515,27 +600,25 @@
     .diagram-svg-box {
       border: 1px dashed var(--line);
       background: var(--paper);
-      padding: 12px;
-      margin: 12px 0;
+      padding: 10px;
+      margin: 10px 0;
     }
 
     .diagram-text {
-      font-size: 0.86rem;
+      font-size: 0.84rem;
       color: var(--ink-secondary);
-      margin-bottom: 12px;
     }
 
-    /* Interactive Step-by-Step Guide Cards */
     .step-cards {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 16px;
-      margin-top: 20px;
+      margin-top: 16px;
     }
 
     .step-card {
       border: 1px solid var(--line-strong);
-      padding: 18px;
+      padding: 16px;
       background: var(--paper-card);
       display: flex;
       flex-direction: column;
@@ -544,382 +627,419 @@
     }
 
     .step-num {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
       color: var(--figma-orange);
       font-weight: 700;
     }
 
     .step-card h3 {
-      font-family: var(--font-serif);
+      font-family: 'Newsreader', Georgia, serif;
       font-size: 1.15rem;
       font-weight: 500;
       margin-top: 4px;
     }
 
     .step-card p {
-      font-size: 0.83rem;
+      font-size: 0.82rem;
       color: var(--ink-secondary);
     }
 
-    .glossary-box {
-      margin-top: 36px;
-      border-top: 1px solid var(--line-strong);
-      padding-top: 24px;
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px 32px;
-      font-size: 0.83rem;
-    }
-
-    .glossary-item strong {
-      font-family: var(--font-mono);
-      font-size: 0.76rem;
-      color: var(--ink);
-    }
-
     kbd {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
       padding: 1px 5px;
       border: 1px solid var(--line-strong);
       background: var(--paper-elevated);
     }
 
-    @media (max-width: 780px) {
-      .masthead, .control-matrix, .manual-grid, .step-cards, .glossary-box {
-        grid-template-columns: 1fr;
-      }
-      .preset-bar {
-        grid-template-columns: 1fr 1fr;
-      }
-      .matrix-col {
-        border-right: none;
-        border-bottom: 1px solid var(--line-strong);
-      }
+    @media (max-width: 960px) {
+      .workspace-shell { grid-template-columns: 1fr; }
+      .margin-rail { display: none; }
+    }
+
+    @media (max-width: 760px) {
+      .masthead, .control-matrix, .manual-grid, .step-cards { grid-template-columns: 1fr; }
+      .preset-bar { grid-template-columns: 1fr 1fr; }
+      .matrix-col { border-right: none; border-bottom: 1px solid var(--line-strong); }
     }
   </style>
 </head>
 <body>
-  <main class="manual-sheet">
-    <!-- MASTHEAD -->
-    <header class="masthead">
-      <div>
-        <div class="meta-tag">
-          <span class="dither-block">░░</span> NIARB_DSP // ACOUSTIC FIELD MANUAL &amp; SYNTHESIZER [v5.0]
+  <div class="workspace-shell">
+    <!-- STICKY LEFT MARGIN INDEX RAIL -->
+    <aside class="margin-rail">
+      <div class="rail-title">░ INDEX // v6.0</div>
+      <a class="rail-link" data-scroll="secTopo">00. TOPOLOGY</a>
+      <a class="rail-link" data-scroll="secSpectrum">01. CAD SPECTRUM</a>
+      <a class="rail-link" data-scroll="colNoise">02. VOCAL EQ</a>
+      <a class="rail-link" data-scroll="colBeats">03. PHASE OSC</a>
+      <a class="rail-link" data-scroll="colTimer">04. INTERVAL</a>
+      <a class="rail-link" data-scroll="secManual">05. FIELD MANUAL</a>
+      <div class="rail-Telemetry">
+        <div>NOTCH: <strong id="railNotch">1200Hz</strong></div>
+        <div>BOOST: <strong id="railPeak">2600Hz</strong></div>
+        <div>BEAT: <strong id="railBeat">10Hz</strong></div>
+        <div>THEME: <strong id="railTheme">PAPER</strong></div>
+      </div>
+    </aside>
+
+    <!-- MAIN TECHNICAL REFERENCE SHEET -->
+    <main class="manual-sheet">
+      <!-- MASTHEAD -->
+      <header class="masthead">
+        <div>
+          <div class="meta-tag">
+            <span class="dither-block">░░</span> NIARB_DSP // DUAL-NODE PARAMETRIC LECTURE SYNTHESIZER [v6.0]
+          </div>
+          <h1>How to carve space for a human voice.</h1>
+          <p class="masthead-sub">
+            An interactive Web Audio synthesizer and illustrated reference manual. Combines a tunable <strong>Fundamental Notch (Node 01)</strong> with a <strong>Consonant Clarity Peak (Node 02)</strong> to maximize lecture speech intelligibility.
+          </p>
         </div>
-        <h1>How to carve space for a human voice.</h1>
-        <p class="masthead-sub">
-          An interactive Web Audio synthesizer and illustrated reference guide. Masks environmental distractions while preserving the 600 Hz – 2,500 Hz vocal formant band of your lecturer.
+        <div class="masthead-controls">
+          <div class="engine-state-pill">
+            <span id="ledDot" class="led"></span>
+            <span id="engineStateText">STATE: STANDBY</span>
+          </div>
+          <div class="btn-row">
+            <button id="themeBtn" class="tech-btn" title="Shortcut: D">Blueprint [D]</button>
+            <button id="testBellBtn" class="tech-btn">Chime</button>
+            <button id="powerBtn" class="tech-btn primary">Engage [Space]</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- FIG_000: INTERACTIVE SIGNAL TOPOLOGY PATCHBAY -->
+      <section class="topology-strip" id="secTopo">
+        <div class="fig-label" style="margin-bottom: 6px;">
+          <span class="dither-block">░</span> <strong>FIG_000</strong> [ WEB AUDIO DSP SIGNAL FLOW TOPOLOGY ]
+        </div>
+        <svg class="topo-svg" viewBox="0 0 860 52">
+          <!-- Signal Wires -->
+          <line id="wire1" class="signal-wire" x1="125" y1="26" x2="215" y2="26"/>
+          <line id="wire2" class="signal-wire" x1="355" y1="26" x2="435" y2="26"/>
+          <line id="wire3" class="signal-wire" x1="575" y1="26" x2="660" y2="26"/>
+          <line id="wire4" class="signal-wire" x1="755" y1="26" x2="835" y2="26"/>
+
+          <!-- Nodes -->
+          <g transform="translate(8, 8)">
+            <rect width="117" height="36" fill="var(--paper-card)" stroke="var(--line-strong)"/>
+            <text x="10" y="15" font-family="JetBrains Mono" font-size="8" fill="var(--ink-muted)">01 // SOURCE</text>
+            <text id="topoNoiseTxt" x="10" y="28" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="var(--ink)">BROWN_NOISE</text>
+          </g>
+
+          <g transform="translate(215, 8)">
+            <rect width="140" height="36" fill="var(--paper-card)" stroke="var(--figma-orange)"/>
+            <text x="10" y="15" font-family="JetBrains Mono" font-size="8" fill="var(--figma-orange)">02 // NODE_01 NOTCH</text>
+            <text id="topoNotchTxt" x="10" y="28" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="var(--ink)">1200 Hz (-18dB)</text>
+          </g>
+
+          <g transform="translate(435, 8)">
+            <rect width="140" height="36" fill="var(--paper-card)" stroke="var(--figma-purple)"/>
+            <text x="10" y="15" font-family="JetBrains Mono" font-size="8" fill="var(--figma-purple)">03 // NODE_02 CLARITY</text>
+            <text id="topoPeakTxt" x="10" y="28" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="var(--ink)">2600 Hz (+4.5dB)</text>
+          </g>
+
+          <g transform="translate(660, 8)">
+            <rect width="95" height="36" fill="var(--paper-card)" stroke="var(--figma-blue)"/>
+            <text x="10" y="15" font-family="JetBrains Mono" font-size="8" fill="var(--figma-blue)">04 // PHASE</text>
+            <text id="topoBeatTxt" x="10" y="28" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="var(--ink)">10Hz ALPHA</text>
+          </g>
+
+          <g transform="translate(785, 8)">
+            <rect width="68" height="36" fill="var(--ink)" stroke="var(--line-strong)"/>
+            <text x="10" y="15" font-family="JetBrains Mono" font-size="8" fill="var(--paper)">05 // DAC</text>
+            <text x="10" y="28" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="var(--paper)">OUT 1/2</text>
+          </g>
+        </svg>
+      </section>
+
+      <!-- PRESET STRIP -->
+      <section class="preset-bar" id="presetStrip">
+        <button class="preset-cell" data-preset="male">
+          <span class="preset-idx">◇ INSTANCE_01</span>
+          <div class="preset-name">Male Lecturer</div>
+          <div class="preset-spec">Notch 850Hz • Peak 2400Hz</div>
+        </button>
+        <button class="preset-cell" data-preset="female">
+          <span class="preset-idx">◇ INSTANCE_02</span>
+          <div class="preset-name">Female Lecturer</div>
+          <div class="preset-spec">Notch 1650Hz • Peak 2900Hz</div>
+        </button>
+        <button class="preset-cell" data-preset="stem">
+          <span class="preset-idx">◇ INSTANCE_03</span>
+          <div class="preset-name">STEM Problem Set</div>
+          <div class="preset-spec">Notch 1200Hz • Beta 18Hz</div>
+        </button>
+        <button class="preset-cell" data-preset="cram">
+          <span class="preset-idx">◇ INSTANCE_04</span>
+          <div class="preset-name">Deep Exam Cram</div>
+          <div class="preset-spec">Pink Full • Gamma 40Hz</div>
+        </button>
+      </section>
+
+      <!-- FIG_001: CAD ARTBOARD WITH RULERS & DUAL PARAMETRIC NODES -->
+      <section class="figure-section" id="secSpectrum">
+        <div class="fig-header">
+          <div class="fig-label">
+            <span class="dither-block">░</span>
+            <strong>FIG_001</strong> [ CAD SPECTRUM &amp; 2-NODE BÉZIER TRANSFER CURVE ]
+            <span class="figma-pill" id="node1Pill">NODE_01: 1200 Hz</span>
+            <span class="figma-pill purple" id="node2Pill">NODE_02: 2600 Hz</span>
+          </div>
+          <button id="visModeBtn" class="tech-btn" style="padding: 4px 10px; font-size: 0.69rem;">View: FFT Spectrum [V]</button>
+        </div>
+
+        <div class="cad-artboard">
+          <span class="node-handle tl"></span>
+          <span class="node-handle tr"></span>
+          <span class="node-handle bl"></span>
+          <span class="node-handle br"></span>
+          <canvas id="scope"></canvas>
+        </div>
+
+        <div class="fig-caption">
+          <span>CAD INTERACTION: Drag <strong>NODE_01 (Left/Blue)</strong> to carve vocal fundamental, or drag <strong>NODE_02 (Right/Purple)</strong> to shape consonant sibilance.</span>
+          <span id="cursorCoordTxt">CURSOR: -- Hz | -- dB</span>
+        </div>
+      </section>
+
+      <!-- HARDWARE CONTROL MATRIX -->
+      <section class="control-matrix">
+        <!-- SEC_01: DUAL-NODE VOCAL EQ & NOISE -->
+        <div class="matrix-col" id="colNoise">
+          <div class="col-header">
+            <h2 class="col-title">Acoustic Noise &amp; Dual-Node Carve</h2>
+            <span class="col-index">░ SEC_01</span>
+          </div>
+
+          <div class="seg-row" id="noiseTypeGroup">
+            <button class="seg-item selected" data-noise="brown">BROWN (-6dB/oct)</button>
+            <button class="seg-item" data-noise="pink">PINK (-3dB/oct)</button>
+            <button class="seg-item" data-noise="white">WHITE (Flat)</button>
+          </div>
+
+          <div class="param-group">
+            <div class="param-label">
+              <span>Masking Noise Amplitude</span>
+              <span class="inspector-badge" id="noiseVolVal">35%</span>
+            </div>
+            <input type="range" id="noiseVol" min="0" max="100" value="35">
+          </div>
+
+          <div class="param-group">
+            <div class="param-label">
+              <span>NODE_01 // Vocal Notch Center (f0)</span>
+              <span class="inspector-badge" id="notchFreqVal">1200 Hz</span>
+            </div>
+            <input type="range" id="notchFreq" min="600" max="2200" step="10" value="1200">
+          </div>
+
+          <div class="param-group">
+            <div class="param-label">
+              <span>NODE_02 // Consonant Clarity Shelf (f1)</span>
+              <span class="inspector-badge" id="peakFreqVal" style="color: var(--figma-purple);">2600 Hz</span>
+            </div>
+            <input type="range" id="peakFreq" min="2000" max="3800" step="20" value="2600">
+          </div>
+
+          <div class="toggle-line">
+            <span>Dual-Node Speech Filter <kbd>M</kbd></span>
+            <label class="blueprint-check">
+              <input type="checkbox" id="vocalCarve" checked>
+              <span id="carveStateTxt">ACTIVE</span>
+            </label>
+          </div>
+
+          <div class="toggle-line">
+            <span>0.12 Hz Anti-Fatigue LFO Drift (±140 Hz)</span>
+            <label class="blueprint-check">
+              <input type="checkbox" id="lfoToggle" checked>
+              <span>MODULATING</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- SEC_02: NEURAL PHASE ENTRAINMENT -->
+        <div class="matrix-col" id="colBeats">
+          <div class="col-header">
+            <h2 class="col-title">Neural Phase Entrainment</h2>
+            <span class="col-index">░ SEC_02</span>
+          </div>
+
+          <div class="seg-row" id="beatGroup">
+            <button class="seg-item" data-beat="0">OFF</button>
+            <button class="seg-item selected" data-beat="10">ALPHA 10Hz</button>
+            <button class="seg-item" data-beat="18">BETA 18Hz</button>
+            <button class="seg-item" data-beat="40">GAMMA 40Hz</button>
+          </div>
+
+          <div class="param-group">
+            <div class="param-label">
+              <span>Sub-Carrier Entrainment Gain</span>
+              <span class="inspector-badge" id="beatVolVal">15%</span>
+            </div>
+            <input type="range" id="beatVol" min="0" max="100" value="15">
+          </div>
+
+          <div class="param-group">
+            <div class="param-label">
+              <span>Carrier Fundamental Pitch</span>
+              <span class="inspector-badge" id="carrierFreqVal">200 Hz</span>
+            </div>
+            <input type="range" id="carrierFreq" min="140" max="320" step="5" value="200">
+          </div>
+
+          <div class="toggle-line">
+            <span>Isochronic Pulse Mode (Laptop Speakers)</span>
+            <label class="blueprint-check">
+              <input type="checkbox" id="isochronicToggle">
+              <span id="isoStateTxt">BINAURAL</span>
+            </label>
+          </div>
+
+          <div class="toggle-line">
+            <span>Oscillator Phase Vector</span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.73rem; color: var(--figma-orange);" id="phaseReadout">L: 200Hz | R: 210Hz</span>
+          </div>
+
+          <div class="toggle-line">
+            <span>Shortcuts</span>
+            <span style="font-size: 0.73rem;"><kbd>Space</kbd> Audio &bull; <kbd>M</kbd> Carve &bull; <kbd>V</kbd> Scope &bull; <kbd>D</kbd> Theme</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEC_03: POMODORO INTERVAL TIMER -->
+      <section class="timer-strip" id="colTimer">
+        <div>
+          <div class="meta-tag" style="margin-bottom: 2px;">░ SEC_03 [ LECTURE INTERVAL CLOCK ]</div>
+          <div style="font-size: 0.83rem; color: var(--ink-secondary);">
+            Ducks masking noise to 25% and triggers a 528 Hz / 880 Hz harmonic bell at block completion.
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="timer-clock" id="timerDisplay">50:00</div>
+          <button class="tech-btn" id="timerToggle">Start</button>
+          <button class="tech-btn" id="timerMode">50m / 25m</button>
+        </div>
+      </section>
+
+      <!-- SEC_04: INTERACTIVE USER MANUAL -->
+      <article class="manual-chapter" id="secManual">
+        <div class="chapter-divider">╌╌╌╌ CHAPTER 01 // INTERACTIVE USER MANUAL &amp; ACOUSTIC THEORY ╌╌╌╌</div>
+        <h2>Why two filter nodes beat flat white noise.</h2>
+        <p class="chapter-lead">
+          Human speech intelligibility depends on two distinct acoustic regions: the <strong>Fundamental &amp; Vowel Formants (600 Hz – 1,800 Hz)</strong> which carry vocal warmth, and the <strong>Consonant Sibilance Band (2,000 Hz – 3,500 Hz)</strong> which distinguishes <em>"p", "t", "k",</em> and <em>"s"</em>. NIARB v6 lets you manipulate both nodes directly on the CAD spectrum.
         </p>
-      </div>
-      <div class="masthead-controls">
-        <div class="engine-state-pill">
-          <span id="ledDot" class="led"></span>
-          <span id="engineStateText">STATE: STANDBY</span>
-        </div>
-        <div class="btn-row">
-          <button id="testBellBtn" class="tech-btn">Test Chime</button>
-          <button id="powerBtn" class="tech-btn primary">Engage Audio [Space]</button>
-        </div>
-      </div>
-    </header>
 
-    <!-- PRESET BAR (FIGMA COMPONENT INSTANCES) -->
-    <section class="preset-bar" id="presetStrip">
-      <button class="preset-cell" data-preset="male">
-        <span class="preset-idx">◇ INSTANCE_01</span>
-        <div class="preset-name">Male Lecturer</div>
-        <div class="preset-spec">Notch: 850Hz • Alpha 10Hz</div>
-      </button>
-      <button class="preset-cell" data-preset="female">
-        <span class="preset-idx">◇ INSTANCE_02</span>
-        <div class="preset-name">Female Lecturer</div>
-        <div class="preset-spec">Notch: 1650Hz • Alpha 10Hz</div>
-      </button>
-      <button class="preset-cell" data-preset="stem">
-        <span class="preset-idx">◇ INSTANCE_03</span>
-        <div class="preset-name">STEM Problem Set</div>
-        <div class="preset-spec">Notch: 1200Hz • Beta 18Hz</div>
-      </button>
-      <button class="preset-cell" data-preset="cram">
-        <span class="preset-idx">◇ INSTANCE_04</span>
-        <div class="preset-name">Deep Exam Cram</div>
-        <div class="preset-spec">Pink Full • Gamma 40Hz</div>
-      </button>
-    </section>
-
-    <!-- FIG_001: LIVE SPECTRUM & FIGMA VECTOR NOTCH -->
-    <section class="figure-section" id="secSpectrum">
-      <div class="fig-header">
-        <div class="fig-label">
-          <span class="dither-block">░</span>
-          <strong>FIG_001</strong> [ REAL-TIME 2048-PT FFT SPECTRUM &amp; BÉZIER NOTCH NODE ]
-          <span class="figma-dimension-pill" id="figmaCoordsPill">X: 1200 Hz × Q: 0.85</span>
-        </div>
-        <button id="visModeBtn" class="tech-btn" style="padding: 4px 10px; font-size: 0.7rem;">View: FFT Spectrum [V]</button>
-      </div>
-
-      <div class="canvas-frame">
-        <span class="node-handle tl"></span>
-        <span class="node-handle tr"></span>
-        <span class="node-handle bl"></span>
-        <span class="node-handle br"></span>
-        <canvas id="scope"></canvas>
-      </div>
-
-      <div class="fig-caption">
-        <span>INTERACTION: Click or drag horizontally inside FIG_001 to reposition the vocal notch vertex.</span>
-        <span id="sampleRateReadout">DSP: 48.0 kHz // 140Hz RENDER LOOP</span>
-      </div>
-    </section>
-
-    <!-- HARDWARE CONTROL MATRIX -->
-    <section class="control-matrix">
-      <!-- SEC_01: NOISE & VOCAL CARVE -->
-      <div class="matrix-col" id="colNoise">
-        <div class="col-header">
-          <h2 class="col-title">Acoustic Noise &amp; Vocal Carve</h2>
-          <span class="col-index">░ SEC_01</span>
-        </div>
-
-        <div class="seg-row" id="noiseTypeGroup">
-          <button class="seg-item selected" data-noise="brown">BROWN (-6dB/oct)</button>
-          <button class="seg-item" data-noise="pink">PINK (-3dB/oct)</button>
-          <button class="seg-item" data-noise="white">WHITE (Flat)</button>
-        </div>
-
-        <div class="param-group">
-          <div class="param-label">
-            <span>Masking Noise Amplitude</span>
-            <span class="param-readout" id="noiseVolVal">35%</span>
-          </div>
-          <input type="range" id="noiseVol" min="0" max="100" value="35">
-        </div>
-
-        <div class="param-group">
-          <div class="param-label">
-            <span>Vocal Notch Center Frequency (f0)</span>
-            <span class="param-readout" id="notchFreqVal">1200 Hz</span>
-          </div>
-          <input type="range" id="notchFreq" min="600" max="2500" step="10" value="1200">
-        </div>
-
-        <div class="toggle-line">
-          <span>Biquad Band-Reject Carve Filter <kbd>M</kbd></span>
-          <label class="blueprint-check">
-            <input type="checkbox" id="vocalCarve" checked>
-            <span id="carveStateTxt">ENABLED</span>
-          </label>
-        </div>
-
-        <div class="toggle-line">
-          <span>0.12 Hz Anti-Fatigue LFO Drift (±140 Hz)</span>
-          <label class="blueprint-check">
-            <input type="checkbox" id="lfoToggle" checked>
-            <span>MODULATING</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- SEC_02: NEURAL PHASE ENTRAINMENT -->
-      <div class="matrix-col" id="colBeats">
-        <div class="col-header">
-          <h2 class="col-title">Neural Phase Entrainment</h2>
-          <span class="col-index">░ SEC_02</span>
-        </div>
-
-        <div class="seg-row" id="beatGroup">
-          <button class="seg-item" data-beat="0">OFF</button>
-          <button class="seg-item selected" data-beat="10">ALPHA 10Hz</button>
-          <button class="seg-item" data-beat="18">BETA 18Hz</button>
-          <button class="seg-item" data-beat="40">GAMMA 40Hz</button>
-        </div>
-
-        <div class="param-group">
-          <div class="param-label">
-            <span>Sub-Carrier Entrainment Gain</span>
-            <span class="param-readout" id="beatVolVal">15%</span>
-          </div>
-          <input type="range" id="beatVol" min="0" max="100" value="15">
-        </div>
-
-        <div class="param-group">
-          <div class="param-label">
-            <span>Carrier Fundamental Pitch</span>
-            <span class="param-readout" id="carrierFreqVal">200 Hz</span>
-          </div>
-          <input type="range" id="carrierFreq" min="140" max="320" step="5" value="200">
-        </div>
-
-        <div class="toggle-line">
-          <span>Isochronic Pulse Mode (For Laptop Speakers)</span>
-          <label class="blueprint-check">
-            <input type="checkbox" id="isochronicToggle">
-            <span id="isoStateTxt">BINAURAL</span>
-          </label>
-        </div>
-
-        <div class="toggle-line">
-          <span>Oscillator Phase Vector</span>
-          <span style="font-family: var(--font-mono); font-size: 0.74rem; color: var(--figma-orange);" id="phaseReadout">L: 200Hz | R: 210Hz</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- SEC_03: POMODORO INTERVAL TIMER -->
-    <section class="timer-strip" id="colTimer">
-      <div>
-        <div class="meta-tag" style="margin-bottom: 2px;">░ SEC_03 [ LECTURE INTERVAL CLOCK ]</div>
-        <div style="font-size: 0.84rem; color: var(--ink-secondary);">
-          Automatically ducks noise floor to 25% and triggers a 528 Hz / 880 Hz harmonic chime at completion.
-        </div>
-      </div>
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <div class="timer-clock" id="timerDisplay">50:00</div>
-        <button class="tech-btn" id="timerToggle">Start</button>
-        <button class="tech-btn" id="timerMode">50m / 25m</button>
-      </div>
-    </section>
-
-    <!-- SEC_04: INTERACTIVE USER MANUAL (MAKING SOFTWARE STYLE) -->
-    <article class="manual-chapter">
-      <div class="chapter-divider">╌╌╌╌ CHAPTER 01 // INTERACTIVE USER MANUAL &amp; ACOUSTIC THEORY ╌╌╌╌</div>
-      <h2>How this synthesizer keeps you focused.</h2>
-      <p class="chapter-lead">
-        Most people play white noise while studying to drown out barking dogs or roommate chatter. The problem is that human speech lives right in the middle of the audio spectrum—between <strong>300 Hz and 3,000 Hz</strong>. Playing flat noise over a recorded lecture forces your brain to strain to decode consonants. Here is how NIARB solves this—and how to operate the console.
-      </p>
-
-      <!-- INTERACTIVE FIGMA DIAGRAMS -->
-      <div class="manual-grid">
-        <!-- FIG_002: INTERACTIVE FORMANT SIMULATOR -->
-        <div class="diagram-card">
-          <div>
-            <div class="fig-label" style="margin-bottom: 6px;">
-              <span class="dither-block">░</span> <strong>FIG_002</strong> [ SPEECH FORMANT COLLISION SIMULATOR ]
+        <div class="manual-grid">
+          <!-- FIG_002: FORMANT SIMULATOR -->
+          <div class="diagram-card">
+            <div>
+              <div class="fig-label" style="margin-bottom: 6px;">
+                <span class="dither-block">░</span> <strong>FIG_002</strong> [ SPEECH FORMANT COLLISION SIMULATOR ]
+              </div>
+              <p class="diagram-text">
+                Drag the simulated notch depth below to inspect how carving a valley around 1,200 Hz increases the Speech Intelligibility Signal-to-Noise Ratio (SNR).
+              </p>
+              <div class="diagram-svg-box">
+                <svg viewBox="0 0 380 135" width="100%" height="135">
+                  <line x1="0" y1="35" x2="380" y2="35" stroke="var(--line)" stroke-dasharray="2 2"/>
+                  <line x1="0" y1="70" x2="380" y2="70" stroke="var(--line)" stroke-dasharray="2 2"/>
+                  <line x1="0" y1="105" x2="380" y2="105" stroke="var(--line)" stroke-dasharray="2 2"/>
+                  <path d="M 30 120 Q 120 115 155 38 Q 190 15 225 38 Q 260 115 350 120" fill="rgba(242, 78, 30, 0.15)" stroke="var(--figma-orange)" stroke-width="2"/>
+                  <text x="142" y="22" font-family="JetBrains Mono" font-size="9" fill="var(--figma-orange)">LECTURER VOICE (1200Hz)</text>
+                  <path id="simNoisePath" d="M 10 45 L 120 45 Q 190 120 260 45 L 370 45" fill="none" stroke="var(--figma-blue)" stroke-width="2.2"/>
+                  <line id="simHandleLine" x1="150" y1="85" x2="230" y2="85" stroke="var(--figma-blue)" stroke-width="1"/>
+                  <circle id="simHandleL" cx="150" cy="85" r="3.5" fill="#fff" stroke="var(--figma-blue)" stroke-width="1.5"/>
+                  <circle id="simHandleR" cx="230" cy="85" r="3.5" fill="#fff" stroke="var(--figma-blue)" stroke-width="1.5"/>
+                  <rect id="simVertex" x="186" y="81" width="8" height="8" fill="#fff" stroke="var(--figma-blue)" stroke-width="1.5"/>
+                </svg>
+              </div>
             </div>
-            <p class="diagram-text">
-              Drag the simulated notch slider below to see how carving a <strong>Biquad Notch</strong> around the instructor's voice improves the Speech Intelligibility Signal-to-Noise Ratio (SNR).
-            </p>
-            <div class="diagram-svg-box">
-              <svg id="fig2Svg" viewBox="0 0 380 140" width="100%" height="140">
-                <!-- Blueprint Grid -->
-                <line x1="0" y1="35" x2="380" y2="35" stroke="#D8D5CD" stroke-dasharray="2 2"/>
-                <line x1="0" y1="70" x2="380" y2="70" stroke="#D8D5CD" stroke-dasharray="2 2"/>
-                <line x1="0" y1="105" x2="380" y2="105" stroke="#D8D5CD" stroke-dasharray="2 2"/>
-                <!-- Lecturer Vocal Formant Peak (Static Orange Curve) -->
-                <path d="M 30 125 Q 120 120 155 40 Q 190 15 225 40 Q 260 120 350 125" fill="rgba(242, 78, 30, 0.14)" stroke="#F24E1E" stroke-width="2"/>
-                <text x="148" y="24" font-family="JetBrains Mono" font-size="9" fill="#F24E1E">LECTURER VOICE (1200Hz)</text>
-                <!-- Dynamic Noise Floor Path (Blue Figma Bézier) -->
-                <path id="simNoisePath" d="M 10 45 L 120 45 Q 190 125 260 45 L 370 45" fill="none" stroke="#0D99FF" stroke-width="2.2"/>
-                <!-- Figma Handle Nodes -->
-                <line id="simHandleLine" x1="150" y1="90" x2="230" y2="90" stroke="#0D99FF" stroke-width="1"/>
-                <circle id="simHandleL" cx="150" cy="90" r="3.5" fill="#fff" stroke="#0D99FF" stroke-width="1.5"/>
-                <circle id="simHandleR" cx="230" cy="90" r="3.5" fill="#fff" stroke="#0D99FF" stroke-width="1.5"/>
-                <rect id="simVertex" x="186" y="86" width="8" height="8" fill="#fff" stroke="#0D99FF" stroke-width="1.5"/>
-              </svg>
+            <div>
+              <div class="param-label">
+                <span>Simulated Notch Depth</span>
+                <span class="inspector-badge" id="simSnrReadout">+14.2 dB SNR</span>
+              </div>
+              <input type="range" id="simNotchSlider" min="0" max="100" value="85">
             </div>
           </div>
-          <div>
-            <div class="param-label" style="margin-bottom: 4px;">
-              <span>Simulated Notch Depth</span>
-              <span class="param-readout" id="simSnrReadout">CLARITY GAIN: +14.2 dB SNR</span>
-            </div>
-            <input type="range" id="simNotchSlider" min="0" max="100" value="85">
-          </div>
-        </div>
 
-        <!-- FIG_003: BINAURAL VS ISOCHRONIC PHASE VECTOR -->
-        <div class="diagram-card">
-          <div>
-            <div class="fig-label" style="margin-bottom: 6px;">
-              <span class="dither-block">░</span> <strong>FIG_003</strong> [ BINAURAL vs. ISOCHRONIC WAVEFORMS ]
+          <!-- FIG_003: BINAURAL VS ISOCHRONIC -->
+          <div class="diagram-card">
+            <div>
+              <div class="fig-label" style="margin-bottom: 6px;">
+                <span class="dither-block">░</span> <strong>FIG_003</strong> [ BINAURAL vs. ISOCHRONIC WAVEFORMS ]
+              </div>
+              <p class="diagram-text">
+                <strong>Binaural mode</strong> creates a phase-interference beat inside the superior olivary complex (requires headphones). <strong>Isochronic mode</strong> pulses carrier amplitude for laptop speakers.
+              </p>
+              <div class="diagram-svg-box">
+                <svg viewBox="0 0 380 135" width="100%" height="135">
+                  <rect x="8" y="8" width="364" height="118" fill="none" stroke="var(--figma-blue)" stroke-width="1" stroke-dasharray="3 3"/>
+                  <path id="fig3WaveTop" d="" fill="none" stroke="var(--ink)" stroke-width="1.4"/>
+                  <path id="fig3WaveBot" d="" fill="none" stroke="var(--figma-blue)" stroke-width="1.8"/>
+                  <text x="16" y="24" font-family="JetBrains Mono" font-size="9" fill="var(--ink-secondary)">CH_01: CARRIER WAVE (200 Hz)</text>
+                  <text x="16" y="84" font-family="JetBrains Mono" font-size="9" fill="var(--figma-blue)" id="fig3BotLabel">CH_02: PHASE ENVELOPE (BINAURAL)</text>
+                </svg>
+              </div>
             </div>
-            <p class="diagram-text">
-              <strong>Binaural mode</strong> sends 200 Hz to your left ear and 210 Hz to your right ear; your superior olivary complex synthesizes a 10 Hz phantom beat. <strong>Isochronic mode</strong> pulses volume directly so you can use laptop speakers.
-            </p>
-            <div class="diagram-svg-box">
-              <svg id="fig3Svg" viewBox="0 0 380 140" width="100%" height="140">
-                <rect x="8" y="8" width="364" height="124" fill="none" stroke="#0D99FF" stroke-width="1" stroke-dasharray="3 3"/>
-                <path id="fig3WaveTop" d="" fill="none" stroke="#141413" stroke-width="1.5"/>
-                <path id="fig3WaveBot" d="" fill="none" stroke="#0D99FF" stroke-width="1.8"/>
-                <text x="16" y="24" font-family="JetBrains Mono" font-size="9" fill="#52514E" id="fig3TopLabel">CH_01: CARRIER WAVE (200 Hz)</text>
-                <text x="16" y="86" font-family="JetBrains Mono" font-size="9" fill="#0D99FF" id="fig3BotLabel">CH_02: RESULTANT ENVELOPE (10 Hz BEAT)</text>
-              </svg>
+            <div style="display: flex; gap: 8px;">
+              <button class="tech-btn" id="simBinauralBtn" style="flex:1; padding: 6px;">Binaural Math</button>
+              <button class="tech-btn" id="simIsoBtn" style="flex:1; padding: 6px;">Isochronic Math</button>
             </div>
           </div>
-          <div style="display: flex; gap: 8px;">
-            <button class="tech-btn" id="simBinauralBtn" style="flex:1; padding: 6px;">Preview Binaural Math</button>
-            <button class="tech-btn" id="simIsoBtn" style="flex:1; padding: 6px;">Preview Isochronic Math</button>
+        </div>
+
+        <div class="step-cards">
+          <div class="step-card">
+            <div>
+              <span class="step-num">STEP_01 // DUAL-NODE CALIBRATION</span>
+              <h3>Drag Nodes on FIG_001</h3>
+              <p>
+                Drag <strong>NODE_01 (Blue)</strong> to match the lecturer's fundamental pitch (850 Hz male / 1650 Hz female) and <strong>NODE_02 (Purple)</strong> between 2400–3000 Hz to sharpen consonants.
+              </p>
+            </div>
+            <button class="tech-btn" data-focus-target="secSpectrum">Highlight CAD Canvas ↑</button>
+          </div>
+
+          <div class="step-card">
+            <div>
+              <span class="step-num">STEP_02 // SELECT BRAINWAVE</span>
+              <h3>Lock Your Entrainment Band</h3>
+              <p>
+                Select <strong>Alpha (10 Hz)</strong> for lecture comprehension, <strong>Beta (18 Hz)</strong> for problem sets, or <strong>Gamma (40 Hz)</strong> for exam revision. Enable Isochronic Mode on speakers.
+              </p>
+            </div>
+            <button class="tech-btn" data-focus-target="colBeats">Highlight SEC_02 Phase ↑</button>
+          </div>
+
+          <div class="step-card">
+            <div>
+              <span class="step-num">STEP_03 // NIGHT-SHIFT CAD</span>
+              <h3>Toggle Blueprint Dark Mode</h3>
+              <p>
+                Studying late at night? Press <kbd>D</kbd> or click <strong>Blueprint [D]</strong> in the masthead to switch from warm archival paper to carbon-slate CAD blueprint mode.
+              </p>
+            </div>
+            <button class="tech-btn" id="manualThemeTrigger">Toggle Blueprint Mode ◐</button>
           </div>
         </div>
-      </div>
-
-      <!-- STEP BY STEP INTERACTIVE OPERATIONAL WALKTHROUGH -->
-      <div class="fig-label" style="margin-bottom: 8px;">
-        <span class="dither-block">░</span> <strong>OPERATIONAL PROTOCOL</strong> [ CLICK ANY STEP TO LOCATE &amp; TEST ON CONSOLE ]
-      </div>
-
-      <div class="step-cards">
-        <div class="step-card">
-          <div>
-            <span class="step-num">STEP_01 // CALIBRATE VOICE</span>
-            <h3>Match the Instructor's Pitch</h3>
-            <p>
-              Start your lecture video first. Engage NIARB and drag the red/blue node inside <strong>FIG_001</strong> (around <code>850 Hz</code> for deeper voices or <code>1650 Hz</code> for higher voices) until speech cuts cleanly through the brown noise.
-            </p>
-          </div>
-          <button class="tech-btn" data-focus-target="secSpectrum">Highlight FIG_001 Canvas ↑</button>
-        </div>
-
-        <div class="step-card">
-          <div>
-            <span class="step-num">STEP_02 // SELECT BRAINWAVE</span>
-            <h3>Pick Your Cognitive Band</h3>
-            <p>
-              Choose <strong>Alpha (10 Hz)</strong> for steady note-taking, <strong>Beta (18 Hz)</strong> for active math/coding problem sets, or <strong>Gamma (40 Hz)</strong> for intense memorization. Turn on <em>Isochronic Mode</em> if not wearing headphones.
-            </p>
-          </div>
-          <button class="tech-btn" data-focus-target="colBeats">Highlight SEC_02 Entrainment ↑</button>
-        </div>
-
-        <div class="step-card">
-          <div>
-            <span class="step-num">STEP_03 // LOCK INTERVAL</span>
-            <h3>Run 50-Minute Lecture Blocks</h3>
-            <p>
-              Start the <strong>50:00 timer</strong> in SEC_03. Keep noise gain between <code>25% – 40%</code>. When the timer finishes, NIARB gently ducks the noise floor and rings a harmonic bell so your ears never suffer shock.
-            </p>
-          </div>
-          <button class="tech-btn" data-focus-target="colTimer">Highlight SEC_03 Timer ↑</button>
-        </div>
-      </div>
-
-      <!-- GLOSSARY FOOTER -->
-      <div class="glossary-box">
-        <div class="glossary-item">
-          <strong>[1] Formant Frequencies (600–2500 Hz) —</strong> The acoustic resonance peaks of the human vocal tract that distinguish vowels and consonants.
-        </div>
-        <div class="glossary-item">
-          <strong>[2] Brownian Noise (1/f²) —</strong> Procedural noise that decreases in power by 6 dB per octave, removing harsh high-frequency hiss.
-        </div>
-        <div class="glossary-item">
-          <strong>[3] Anti-Fatigue LFO (0.12 Hz) —</strong> A sub-audible oscillator that drifts the notch filter slightly so your auditory cortex does not habituate.
-        </div>
-        <div class="glossary-item">
-          <strong>[4] Keyboard Shortcuts —</strong> Press <kbd>Space</kbd> to toggle audio, <kbd>M</kbd> to toggle the vocal carve filter, and <kbd>V</kbd> to switch FFT/Waveform view.
-        </div>
-      </div>
-    </article>
-  </main>
+      </article>
+    </main>
+  </div>
 
   <script>
-    const STORAGE_KEY = 'niarb_makingsoftware_v5';
+    const STORAGE_KEY = 'niarb_makingsoftware_v6';
     let audioCtx = null;
     let isRunning = false;
     let noiseNode = null;
     let noiseGain = null;
     let notchFilter = null;
+    let peakFilter = null;
     let lfoOsc = null;
     let lfoGain = null;
     let leftOsc = null;
@@ -933,9 +1053,20 @@
     let currentBeat = 10;
     let visMode = 'fft';
     let activePreset = '';
+    let currentTheme = 'paper';
+    let mouseCanvasPos = null;
 
     const canvas = document.getElementById('scope');
     const ctx2d = canvas.getContext('2d');
+
+    function setTheme(theme) {
+      currentTheme = theme;
+      document.documentElement.setAttribute('data-theme', theme);
+      document.getElementById('themeBtn').textContent = theme === 'paper' ? 'Blueprint [D]' : 'Paper [D]';
+      document.getElementById('railTheme').textContent = theme.toUpperCase();
+      if (!isRunning) drawStaticBlueprint();
+      saveState();
+    }
 
     function resizeCanvas() {
       const dpr = window.devicePixelRatio || 1;
@@ -955,13 +1086,15 @@
         beat: currentBeat,
         noiseVol: document.getElementById('noiseVol').value,
         notchFreq: document.getElementById('notchFreq').value,
+        peakFreq: document.getElementById('peakFreq').value,
         vocalCarve: document.getElementById('vocalCarve').checked,
         lfoToggle: document.getElementById('lfoToggle').checked,
         beatVol: document.getElementById('beatVol').value,
         carrierFreq: document.getElementById('carrierFreq').value,
         isochronic: document.getElementById('isochronicToggle').checked,
         visMode,
-        activePreset
+        activePreset,
+        theme: currentTheme
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
@@ -975,6 +1108,7 @@
           if (typeof s.beat === 'number') currentBeat = s.beat;
           if (s.noiseVol !== undefined) document.getElementById('noiseVol').value = s.noiseVol;
           if (s.notchFreq !== undefined) document.getElementById('notchFreq').value = s.notchFreq;
+          if (s.peakFreq !== undefined) document.getElementById('peakFreq').value = s.peakFreq;
           if (s.vocalCarve !== undefined) document.getElementById('vocalCarve').checked = s.vocalCarve;
           if (s.lfoToggle !== undefined) document.getElementById('lfoToggle').checked = s.lfoToggle;
           if (s.beatVol !== undefined) document.getElementById('beatVol').value = s.beatVol;
@@ -982,6 +1116,7 @@
           if (s.isochronic !== undefined) document.getElementById('isochronicToggle').checked = s.isochronic;
           if (s.visMode) visMode = s.visMode;
           if (s.activePreset) activePreset = s.activePreset;
+          if (s.theme) setTheme(s.theme);
         }
       } catch (e) {}
       syncUIFromState();
@@ -1001,6 +1136,7 @@
 
       const nVol = document.getElementById('noiseVol').value;
       const nFreq = document.getElementById('notchFreq').value;
+      const pFreq = document.getElementById('peakFreq').value;
       const bVol = document.getElementById('beatVol').value;
       const cFreq = parseFloat(document.getElementById('carrierFreq').value);
       const carveOn = document.getElementById('vocalCarve').checked;
@@ -1008,12 +1144,25 @@
 
       document.getElementById('noiseVolVal').textContent = `${nVol}%`;
       document.getElementById('notchFreqVal').textContent = `${nFreq} Hz`;
+      document.getElementById('peakFreqVal').textContent = `${pFreq} Hz`;
       document.getElementById('beatVolVal').textContent = `${bVol}%`;
       document.getElementById('carrierFreqVal').textContent = `${cFreq} Hz`;
       document.getElementById('visModeBtn').textContent = visMode === 'fft' ? 'View: FFT Spectrum [V]' : 'View: Oscilloscope [V]';
-      document.getElementById('carveStateTxt').textContent = carveOn ? 'ENABLED' : 'BYPASSED';
+      document.getElementById('carveStateTxt').textContent = carveOn ? 'ACTIVE' : 'BYPASSED';
       document.getElementById('isoStateTxt').textContent = isoOn ? 'ISOCHRONIC' : 'BINAURAL';
-      document.getElementById('figmaCoordsPill').textContent = carveOn ? `X: ${nFreq} Hz × Q: 0.85` : `NOTCH BYPASSED`;
+
+      document.getElementById('node1Pill').textContent = carveOn ? `NODE_01: ${nFreq} Hz` : `NODE_01: BYP`;
+      document.getElementById('node2Pill').textContent = carveOn ? `NODE_02: ${pFreq} Hz` : `NODE_02: BYP`;
+
+      // Update Topology SVG & Left Margin Rail
+      document.getElementById('topoNoiseTxt').textContent = `${currentNoise.toUpperCase()}_NOISE`;
+      document.getElementById('topoNotchTxt').textContent = carveOn ? `${nFreq} Hz (-18dB)` : `BYPASSED`;
+      document.getElementById('topoPeakTxt').textContent = carveOn ? `${pFreq} Hz (+4.5dB)` : `BYPASSED`;
+      document.getElementById('topoBeatTxt').textContent = currentBeat === 0 ? `OFF` : `${currentBeat}Hz${isoOn ? 'ISO' : 'BIN'}`;
+
+      document.getElementById('railNotch').textContent = `${nFreq}Hz`;
+      document.getElementById('railPeak').textContent = `${pFreq}Hz`;
+      document.getElementById('railBeat').textContent = `${currentBeat}Hz`;
 
       document.getElementById('phaseReadout').textContent =
         currentBeat === 0
@@ -1056,15 +1205,14 @@
 
     function startAudio() {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      document.getElementById('sampleRateReadout').textContent =
-        `DSP: ${(audioCtx.sampleRate / 1000).toFixed(1)} kHz // 140Hz RENDER LOOP`;
-
       analyser = audioCtx.createAnalyser();
       analyser.fftSize = 2048;
       analyser.smoothingTimeConstant = 0.84;
       analyser.connect(audioCtx.destination);
 
       notchFilter = audioCtx.createBiquadFilter();
+      peakFilter = audioCtx.createBiquadFilter();
+
       lfoOsc = audioCtx.createOscillator();
       lfoGain = audioCtx.createGain();
       lfoOsc.frequency.value = 0.12;
@@ -1072,11 +1220,12 @@
       lfoGain.connect(notchFilter.frequency);
       lfoOsc.start();
 
-      updateNotchFilter();
+      updateFilters();
 
       noiseGain = audioCtx.createGain();
       noiseGain.gain.value = (document.getElementById('noiseVol').value / 100) * 0.5;
-      notchFilter.connect(noiseGain);
+      notchFilter.connect(peakFilter);
+      peakFilter.connect(noiseGain);
       noiseGain.connect(analyser);
 
       rebuildNoiseSource();
@@ -1107,6 +1256,7 @@
       isRunning = true;
       document.getElementById('ledDot').classList.add('active');
       document.getElementById('engineStateText').textContent = 'STATE: SYNTHESIZING';
+      document.querySelectorAll('.signal-wire').forEach(w => w.classList.add('live'));
       drawVisualizer();
     }
 
@@ -1123,22 +1273,31 @@
       noiseNode.start();
     }
 
-    function updateNotchFilter() {
+    function updateFilters() {
       syncUIFromState();
-      if (!notchFilter || !audioCtx) {
+      if (!notchFilter || !peakFilter || !audioCtx) {
         if (!isRunning) drawStaticBlueprint();
         return;
       }
       const carve = document.getElementById('vocalCarve').checked;
-      const freq = parseFloat(document.getElementById('notchFreq').value);
+      const nFreq = parseFloat(document.getElementById('notchFreq').value);
+      const pFreq = parseFloat(document.getElementById('peakFreq').value);
       const lfoOn = document.getElementById('lfoToggle').checked;
+
       if (carve) {
         notchFilter.type = 'notch';
-        notchFilter.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.03);
-        notchFilter.Q.setTargetAtTime(0.85, audioCtx.currentTime, 0.03);
+        notchFilter.frequency.setTargetAtTime(nFreq, audioCtx.currentTime, 0.03);
+        notchFilter.Q.setTargetAtTime(0.9, audioCtx.currentTime, 0.03);
+
+        peakFilter.type = 'peaking';
+        peakFilter.frequency.setTargetAtTime(pFreq, audioCtx.currentTime, 0.03);
+        peakFilter.Q.setTargetAtTime(1.2, audioCtx.currentTime, 0.03);
+        peakFilter.gain.setTargetAtTime(4.5, audioCtx.currentTime, 0.03);
+
         lfoGain.gain.setTargetAtTime(lfoOn ? 140 : 0, audioCtx.currentTime, 0.05);
       } else {
         notchFilter.type = 'allpass';
+        peakFilter.type = 'allpass';
         lfoGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
       }
     }
@@ -1198,6 +1357,7 @@
       isRunning = false;
       document.getElementById('ledDot').classList.remove('active');
       document.getElementById('engineStateText').textContent = 'STATE: STANDBY';
+      document.querySelectorAll('.signal-wire').forEach(w => w.classList.remove('live'));
       drawStaticBlueprint();
     }
 
@@ -1209,13 +1369,19 @@
         btn.classList.add('running');
       } else {
         stopAudio();
-        btn.textContent = 'Engage Audio [Space]';
+        btn.textContent = 'Engage [Space]';
         btn.classList.remove('running');
       }
     }
 
     document.getElementById('powerBtn').addEventListener('click', togglePower);
     document.getElementById('testBellBtn').addEventListener('click', playChime);
+    document.getElementById('themeBtn').addEventListener('click', () => {
+      setTheme(currentTheme === 'paper' ? 'blueprint' : 'paper');
+    });
+    document.getElementById('manualThemeTrigger').addEventListener('click', () => {
+      setTheme(currentTheme === 'paper' ? 'blueprint' : 'paper');
+    });
 
     document.getElementById('visModeBtn').addEventListener('click', () => {
       visMode = visMode === 'fft' ? 'wave' : 'fft';
@@ -1227,25 +1393,32 @@
       cell.addEventListener('click', () => {
         activePreset = cell.dataset.preset;
         if (activePreset === 'male') {
-          currentNoise = 'brown'; currentBeat = 10;
+          currentNoise = 'brown';
+          currentBeat = 10;
           document.getElementById('notchFreq').value = 850;
+          document.getElementById('peakFreq').value = 2400;
           document.getElementById('vocalCarve').checked = true;
         } else if (activePreset === 'female') {
-          currentNoise = 'brown'; currentBeat = 10;
+          currentNoise = 'brown';
+          currentBeat = 10;
           document.getElementById('notchFreq').value = 1650;
+          document.getElementById('peakFreq').value = 2900;
           document.getElementById('vocalCarve').checked = true;
         } else if (activePreset === 'stem') {
-          currentNoise = 'brown'; currentBeat = 18;
+          currentNoise = 'brown';
+          currentBeat = 18;
           document.getElementById('notchFreq').value = 1200;
+          document.getElementById('peakFreq').value = 2600;
           document.getElementById('vocalCarve').checked = true;
         } else if (activePreset === 'cram') {
-          currentNoise = 'pink'; currentBeat = 40;
+          currentNoise = 'pink';
+          currentBeat = 40;
           document.getElementById('vocalCarve').checked = false;
         }
         syncUIFromState();
         if (isRunning) {
           rebuildNoiseSource();
-          updateNotchFilter();
+          updateFilters();
           updateBeatFrequencies();
         } else {
           drawStaticBlueprint();
@@ -1285,7 +1458,13 @@
 
     document.getElementById('notchFreq').addEventListener('input', () => {
       activePreset = '';
-      updateNotchFilter();
+      updateFilters();
+      saveState();
+    });
+
+    document.getElementById('peakFreq').addEventListener('input', () => {
+      activePreset = '';
+      updateFilters();
       saveState();
     });
 
@@ -1299,36 +1478,83 @@
       saveState();
     });
 
-    document.getElementById('vocalCarve').addEventListener('change', () => { updateNotchFilter(); saveState(); });
-    document.getElementById('lfoToggle').addEventListener('change', () => { updateNotchFilter(); saveState(); });
+    document.getElementById('vocalCarve').addEventListener('change', () => { updateFilters(); saveState(); });
+    document.getElementById('lfoToggle').addEventListener('change', () => { updateFilters(); saveState(); });
     document.getElementById('isochronicToggle').addEventListener('change', () => { updateBeatFrequencies(); saveState(); });
 
-    // Figma-style Canvas Dragging to Tune Notch
-    let draggingCanvas = false;
-    function tuneFromCanvas(e) {
+    // Dual-Node CAD Canvas Dragging & Cursor Crosshair Telemetry
+    let activeDragNode = null; // 'node1' or 'node2'
+    const RULER_LEFT = 32;
+    const RULER_TOP = 20;
+    const MAX_HZ = 4500;
+
+    function updateFromCanvasMouse(e, isDrag) {
       const rect = canvas.getBoundingClientRect();
-      const relX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      const maxDisplayHz = 4500;
-      const rawHz = Math.round((relX * maxDisplayHz) / 10) * 10;
-      const clampedHz = Math.max(600, Math.min(2500, rawHz));
-      document.getElementById('notchFreq').value = clampedHz;
-      document.getElementById('vocalCarve').checked = true;
-      activePreset = '';
-      updateNotchFilter();
-      saveState();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      const plotW = rect.width - RULER_LEFT;
+      const plotH = rect.height - RULER_TOP;
+
+      const relX = Math.max(0, Math.min(1, (mx - RULER_LEFT) / plotW));
+      const relY = Math.max(0, Math.min(1, (my - RULER_TOP) / plotH));
+      const hoverHz = Math.round((relX * MAX_HZ) / 10) * 10;
+      const hoverDb = Math.round((0.5 - relY) * 48);
+
+      mouseCanvasPos = { x: mx, y: my, hz: hoverHz, db: hoverDb };
+      document.getElementById('cursorCoordTxt').textContent =
+        `CURSOR: ${hoverHz} Hz | ${hoverDb >= 0 ? '+' : ''}${hoverDb} dB`;
+
+      if (isDrag && activeDragNode) {
+        document.getElementById('vocalCarve').checked = true;
+        activePreset = '';
+        if (activeDragNode === 'node1') {
+          document.getElementById('notchFreq').value = Math.max(600, Math.min(2200, hoverHz));
+        } else {
+          document.getElementById('peakFreq').value = Math.max(2000, Math.min(3800, hoverHz));
+        }
+        updateFilters();
+        saveState();
+      } else if (!isRunning) {
+        drawStaticBlueprint();
+      }
     }
 
-    canvas.addEventListener('mousedown', (e) => { draggingCanvas = true; tuneFromCanvas(e); });
-    window.addEventListener('mousemove', (e) => { if (draggingCanvas) tuneFromCanvas(e); });
-    window.addEventListener('mouseup', () => { draggingCanvas = false; });
+    canvas.addEventListener('mousedown', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const plotW = rect.width - RULER_LEFT;
+      const clickHz = ((mx - RULER_LEFT) / plotW) * MAX_HZ;
+      const n1 = parseFloat(document.getElementById('notchFreq').value);
+      const n2 = parseFloat(document.getElementById('peakFreq').value);
+      activeDragNode = Math.abs(clickHz - n1) <= Math.abs(clickHz - n2) ? 'node1' : 'node2';
+      updateFromCanvasMouse(e, true);
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (activeDragNode) updateFromCanvasMouse(e, true);
+    });
+    canvas.addEventListener('mousemove', (e) => {
+      if (!activeDragNode) updateFromCanvasMouse(e, false);
+    });
+    canvas.addEventListener('mouseleave', () => {
+      mouseCanvasPos = null;
+      document.getElementById('cursorCoordTxt').textContent = 'CURSOR: -- Hz | -- dB';
+      if (!isRunning) drawStaticBlueprint();
+    });
+    window.addEventListener('mouseup', () => {
+      activeDragNode = null;
+    });
 
     window.addEventListener('keydown', (e) => {
       if (e.target.tagName === 'INPUT') return;
-      if (e.code === 'Space') { e.preventDefault(); togglePower(); }
+      if (e.code === 'Space') {
+        e.preventDefault();
+        togglePower();
+      }
       if (e.key.toLowerCase() === 'm') {
         const el = document.getElementById('vocalCarve');
         el.checked = !el.checked;
-        updateNotchFilter();
+        updateFilters();
         saveState();
       }
       if (e.key.toLowerCase() === 'v') {
@@ -1336,98 +1562,160 @@
         syncUIFromState();
         saveState();
       }
+      if (e.key.toLowerCase() === 'd') {
+        setTheme(currentTheme === 'paper' ? 'blueprint' : 'paper');
+      }
     });
 
-    // Draw Technical Grid + Figma Bézier Notch Handles on Main Canvas
-    function drawFigmaNotchOverlay(w, h) {
-      if (w <= 0 || h <= 0) return;
-      ctx2d.strokeStyle = '#E5E2DC';
-      ctx2d.lineWidth = 1;
-      const maxDisplayHz = 4500;
+    function getThemeColors() {
+      const s = getComputedStyle(document.documentElement);
+      return {
+        paper: s.getPropertyValue('--paper').trim(),
+        ruler: s.getPropertyValue('--ruler-bg').trim(),
+        ink: s.getPropertyValue('--ink').trim(),
+        muted: s.getPropertyValue('--ink-muted').trim(),
+        line: s.getPropertyValue('--line').trim(),
+        blue: s.getPropertyValue('--figma-blue').trim(),
+        orange: s.getPropertyValue('--figma-orange').trim(),
+        purple: s.getPropertyValue('--figma-purple').trim(),
+        fftFill: s.getPropertyValue('--fft-fill').trim()
+      };
+    }
 
-      for (let hz = 500; hz < maxDisplayHz; hz += 500) {
-        const x = (hz / maxDisplayHz) * w;
+    function drawCADOverlay(w, h) {
+      if (w <= 0 || h <= 0) return;
+      const c = getThemeColors();
+      const plotW = w - RULER_LEFT;
+      const plotH = h - RULER_TOP;
+
+      // Grid lines
+      ctx2d.strokeStyle = c.line;
+      ctx2d.lineWidth = 1;
+      for (let hz = 500; hz < MAX_HZ; hz += 500) {
+        const x = RULER_LEFT + (hz / MAX_HZ) * plotW;
         ctx2d.beginPath();
-        ctx2d.moveTo(x, 0);
+        ctx2d.moveTo(x, RULER_TOP);
         ctx2d.lineTo(x, h);
         ctx2d.stroke();
-
-        ctx2d.fillStyle = '#85837D';
-        ctx2d.font = '10px "JetBrains Mono", monospace';
-        ctx2d.fillText(`${hz}Hz`, x + 4, h - 6);
       }
-
-      for (let y = 1; y < 4; y++) {
-        const gy = (h / 4) * y;
+      for (let i = 1; i < 4; i++) {
+        const y = RULER_TOP + (plotH / 4) * i;
         ctx2d.beginPath();
-        ctx2d.moveTo(0, gy);
-        ctx2d.lineTo(w, gy);
+        ctx2d.moveTo(RULER_LEFT, y);
+        ctx2d.lineTo(w, y);
         ctx2d.stroke();
       }
 
+      // Dual-Node Parametric Spline
       if (document.getElementById('vocalCarve').checked) {
-        const notchHz = parseFloat(document.getElementById('notchFreq').value);
-        const cx = (notchHz / maxDisplayHz) * w;
-        const bw = (620 / maxDisplayHz) * w;
+        const n1Hz = parseFloat(document.getElementById('notchFreq').value);
+        const n2Hz = parseFloat(document.getElementById('peakFreq').value);
+        const x1 = RULER_LEFT + (n1Hz / MAX_HZ) * plotW;
+        const x2 = RULER_LEFT + (n2Hz / MAX_HZ) * plotW;
+        const baseY = RULER_TOP + plotH * 0.35;
+        const y1 = RULER_TOP + plotH * 0.78;
+        const y2 = RULER_TOP + plotH * 0.56;
 
-        // Figma Selection Bounding Box
-        ctx2d.fillStyle = 'rgba(13, 153, 255, 0.07)';
-        ctx2d.fillRect(cx - bw / 2, 14, bw, h - 34);
-        ctx2d.strokeStyle = '#0D99FF';
-        ctx2d.lineWidth = 1;
-        ctx2d.setLineDash([3, 3]);
-        ctx2d.strokeRect(cx - bw / 2, 14, bw, h - 34);
+        // Redline Distance Dimension between Node 1 and Node 2
+        ctx2d.strokeStyle = c.orange;
+        ctx2d.setLineDash([2, 2]);
+        ctx2d.beginPath();
+        ctx2d.moveTo(x1, RULER_TOP + 18);
+        ctx2d.lineTo(x2, RULER_TOP + 18);
+        ctx2d.stroke();
         ctx2d.setLineDash([]);
 
-        // Bézier Notch Curve Preview & Tangent Handles
-        const vy = h * 0.72;
-        ctx2d.strokeStyle = '#F24E1E';
-        ctx2d.lineWidth = 1.75;
+        const deltaHz = Math.abs(n2Hz - n1Hz);
+        ctx2d.fillStyle = c.orange;
+        ctx2d.font = '500 9px "JetBrains Mono", monospace';
+        ctx2d.fillText(`Δ ${deltaHz} Hz`, (x1 + x2) / 2 - 24, RULER_TOP + 14);
+
+        // Continuous 2-Node Transfer Curve
+        ctx2d.strokeStyle = c.blue;
+        ctx2d.lineWidth = 2;
         ctx2d.beginPath();
-        ctx2d.moveTo(cx - bw, h * 0.28);
-        ctx2d.bezierCurveTo(cx - bw * 0.35, h * 0.28, cx - bw * 0.2, vy, cx, vy);
-        ctx2d.bezierCurveTo(cx + bw * 0.2, vy, cx + bw * 0.35, h * 0.28, cx + bw, h * 0.28);
+        ctx2d.moveTo(RULER_LEFT, baseY);
+        ctx2d.lineTo(Math.max(RULER_LEFT, x1 - 95), baseY);
+        ctx2d.bezierCurveTo(x1 - 40, baseY, x1 - 25, y1, x1, y1);
+        ctx2d.bezierCurveTo(x1 + 25, y1, x1 + 45, baseY, (x1 + x2) / 2, baseY);
+        ctx2d.bezierCurveTo(x2 - 40, baseY, x2 - 25, y2, x2, y2);
+        ctx2d.bezierCurveTo(x2 + 25, y2, x2 + 40, baseY, Math.min(w, x2 + 95), baseY);
+        ctx2d.lineTo(w, baseY);
         ctx2d.stroke();
 
-        // Figma Control Handle Line & Circles
-        ctx2d.strokeStyle = '#0D99FF';
+        // Node 1 Handle (Blue)
+        ctx2d.strokeStyle = c.blue;
         ctx2d.lineWidth = 1.2;
         ctx2d.beginPath();
-        ctx2d.moveTo(cx - 34, vy);
-        ctx2d.lineTo(cx + 34, vy);
+        ctx2d.moveTo(x1 - 28, y1);
+        ctx2d.lineTo(x1 + 28, y1);
         ctx2d.stroke();
-
-        [-34, 34].forEach(offset => {
-          ctx2d.fillStyle = '#FFFFFF';
+        [-28, 28].forEach(dx => {
+          ctx2d.fillStyle = '#fff';
           ctx2d.beginPath();
-          ctx2d.arc(cx + offset, vy, 3.5, 0, Math.PI * 2);
+          ctx2d.arc(x1 + dx, y1, 3, 0, Math.PI * 2);
           ctx2d.fill();
           ctx2d.stroke();
         });
+        ctx2d.fillStyle = '#fff';
+        ctx2d.fillRect(x1 - 4, y1 - 4, 8, 8);
+        ctx2d.strokeRect(x1 - 4, y1 - 4, 8, 8);
 
-        // Center Vertex Diamond/Square
-        ctx2d.fillStyle = '#FFFFFF';
-        ctx2d.fillRect(cx - 4, vy - 4, 8, 8);
-        ctx2d.strokeRect(cx - 4, vy - 4, 8, 8);
-
-        // Figma Coordinate Pill Tag
-        const label = `NOTCH_NODE (${notchHz} Hz)`;
-        ctx2d.fillStyle = '#0D99FF';
-        ctx2d.fillRect(Math.min(w - 150, Math.max(8, cx - 68)), 18, 136, 18);
-        ctx2d.fillStyle = '#FFFFFF';
-        ctx2d.font = '500 10px "JetBrains Mono", monospace';
-        ctx2d.fillText(label, Math.min(w - 144, Math.max(14, cx - 62)), 30);
+        // Node 2 Handle (Purple)
+        ctx2d.strokeStyle = c.purple;
+        ctx2d.beginPath();
+        ctx2d.moveTo(x2 - 24, y2);
+        ctx2d.lineTo(x2 + 24, y2);
+        ctx2d.stroke();
+        ctx2d.fillStyle = '#fff';
+        ctx2d.fillRect(x2 - 4, y2 - 4, 8, 8);
+        ctx2d.strokeRect(x2 - 4, y2 - 4, 8, 8);
       }
+
+      // Live Cursor Crosshair Projection
+      if (mouseCanvasPos && mouseCanvasPos.x > RULER_LEFT && mouseCanvasPos.y > RULER_TOP) {
+        ctx2d.strokeStyle = c.muted;
+        ctx2d.lineWidth = 0.8;
+        ctx2d.setLineDash([3, 3]);
+        ctx2d.beginPath();
+        ctx2d.moveTo(mouseCanvasPos.x, RULER_TOP);
+        ctx2d.lineTo(mouseCanvasPos.x, h);
+        ctx2d.moveTo(RULER_LEFT, mouseCanvasPos.y);
+        ctx2d.lineTo(w, mouseCanvasPos.y);
+        ctx2d.stroke();
+        ctx2d.setLineDash([]);
+      }
+
+      // Top & Left Figma CAD Rulers
+      ctx2d.fillStyle = c.ruler;
+      ctx2d.fillRect(0, 0, w, RULER_TOP);
+      ctx2d.fillRect(0, 0, RULER_LEFT, h);
+      ctx2d.strokeStyle = c.line;
+      ctx2d.beginPath();
+      ctx2d.moveTo(0, RULER_TOP);
+      ctx2d.lineTo(w, RULER_TOP);
+      ctx2d.moveTo(RULER_LEFT, 0);
+      ctx2d.lineTo(RULER_LEFT, h);
+      ctx2d.stroke();
+
+      ctx2d.fillStyle = c.muted;
+      ctx2d.font = '9px "JetBrains Mono", monospace';
+      for (let hz = 500; hz < MAX_HZ; hz += 500) {
+        const x = RULER_LEFT + (hz / MAX_HZ) * plotW;
+        ctx2d.fillText(`${hz}`, x - 10, 13);
+      }
+      ['0dB', '-12', '-24', '-36'].forEach((lbl, idx) => {
+        ctx2d.fillText(lbl, 4, RULER_TOP + idx * (plotH / 4) + 12);
+      });
     }
 
     function drawStaticBlueprint() {
       const rect = canvas.getBoundingClientRect();
-      const w = rect.width;
-      const h = rect.height;
-      if (w <= 0 || h <= 0) return;
-      ctx2d.fillStyle = '#F7F6F2';
-      ctx2d.fillRect(0, 0, w, h);
-      drawFigmaNotchOverlay(w, h);
+      if (rect.width <= 0 || rect.height <= 0) return;
+      const c = getThemeColors();
+      ctx2d.fillStyle = c.paper;
+      ctx2d.fillRect(0, 0, rect.width, rect.height);
+      drawCADOverlay(rect.width, rect.height);
     }
 
     function drawVisualizer() {
@@ -1438,23 +1726,26 @@
       const w = rect.width;
       const h = rect.height;
       if (w <= 0 || h <= 0) return;
+      const plotW = w - RULER_LEFT;
+      const plotH = h - RULER_TOP;
+      const c = getThemeColors();
+
       const bufferLength = analyser.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
 
-      ctx2d.fillStyle = '#F7F6F2';
+      ctx2d.fillStyle = c.paper;
       ctx2d.fillRect(0, 0, w, h);
-      drawFigmaNotchOverlay(w, h);
 
       if (visMode === 'wave') {
         analyser.getByteTimeDomainData(dataArray);
-        ctx2d.lineWidth = 1.8;
-        ctx2d.strokeStyle = '#141413';
+        ctx2d.lineWidth = 1.6;
+        ctx2d.strokeStyle = c.ink;
         ctx2d.beginPath();
-        const sliceWidth = w / bufferLength;
-        let x = 0;
+        const sliceWidth = plotW / bufferLength;
+        let x = RULER_LEFT;
         for (let i = 0; i < bufferLength; i++) {
           const v = dataArray[i] / 128.0;
-          const y = (v * h) / 2;
+          const y = RULER_TOP + (v * plotH) / 2;
           if (i === 0) ctx2d.moveTo(x, y);
           else ctx2d.lineTo(x, y);
           x += sliceWidth;
@@ -1462,36 +1753,37 @@
         ctx2d.stroke();
       } else {
         analyser.getByteFrequencyData(dataArray);
-        const maxDisplayHz = 4500;
         const nyquist = audioCtx.sampleRate / 2;
-        const maxBin = Math.floor((maxDisplayHz / nyquist) * bufferLength);
+        const maxBin = Math.floor((MAX_HZ / nyquist) * bufferLength);
 
         ctx2d.beginPath();
-        ctx2d.moveTo(0, h);
+        ctx2d.moveTo(RULER_LEFT, h);
         for (let i = 0; i < maxBin; i++) {
-          const x = (i / maxBin) * w;
-          const y = h - (dataArray[i] / 255) * (h - 28);
+          const x = RULER_LEFT + (i / maxBin) * plotW;
+          const y = h - (dataArray[i] / 255) * (plotH - 18);
           ctx2d.lineTo(x, y);
         }
         ctx2d.lineTo(w, h);
         ctx2d.closePath();
-        ctx2d.fillStyle = 'rgba(20, 20, 19, 0.08)';
+        ctx2d.fillStyle = c.fftFill;
         ctx2d.fill();
 
         ctx2d.beginPath();
         for (let i = 0; i < maxBin; i++) {
-          const x = (i / maxBin) * w;
-          const y = h - (dataArray[i] / 255) * (h - 28);
+          const x = RULER_LEFT + (i / maxBin) * plotW;
+          const y = h - (dataArray[i] / 255) * (plotH - 18);
           if (i === 0) ctx2d.moveTo(x, y);
           else ctx2d.lineTo(x, y);
         }
-        ctx2d.strokeStyle = '#141413';
-        ctx2d.lineWidth = 1.6;
+        ctx2d.strokeStyle = c.ink;
+        ctx2d.lineWidth = 1.4;
         ctx2d.stroke();
       }
+
+      drawCADOverlay(w, h);
     }
 
-    // Pomodoro Clock
+    // Pomodoro Timer
     let timerDuration = 50 * 60;
     let timeRemaining = timerDuration;
     let timerInterval = null;
@@ -1532,12 +1824,12 @@
       updateTimerUI();
     });
 
-    // Interactive Manual FIG_002: Formant Collision Simulator
+    // Interactive Manual FIG_002
     const simSlider = document.getElementById('simNotchSlider');
     function updateFig2Simulator() {
-      const depth = parseFloat(simSlider.value); // 0 to 100
-      const dipY = 45 + (depth / 100) * 82;
-      const handleY = 45 + (depth / 100) * 48;
+      const depth = parseFloat(simSlider.value);
+      const dipY = 45 + (depth / 100) * 78;
+      const handleY = 45 + (depth / 100) * 44;
       document.getElementById('simNoisePath').setAttribute(
         'd', `M 10 45 L 120 45 Q 190 ${dipY} 260 45 L 370 45`
       );
@@ -1547,13 +1839,12 @@
       document.getElementById('simHandleR').setAttribute('cy', handleY);
       document.getElementById('simVertex').setAttribute('y', handleY - 4);
       const snr = (-2.0 + (depth / 100) * 18.5).toFixed(1);
-      document.getElementById('simSnrReadout').textContent =
-        `CLARITY GAIN: ${snr > 0 ? '+' : ''}${snr} dB SNR`;
+      document.getElementById('simSnrReadout').textContent = `${snr > 0 ? '+' : ''}${snr} dB SNR`;
     }
     simSlider.addEventListener('input', updateFig2Simulator);
     updateFig2Simulator();
 
-    // Interactive Manual FIG_003: Animated Phase Math SVG
+    // Interactive Manual FIG_003
     let simWaveMode = 'binaural';
     let phaseTick = 0;
     function animateFig3Waves() {
@@ -1562,14 +1853,14 @@
       let dBot = '';
       for (let x = 12; x <= 368; x += 4) {
         const norm = (x - 12) / 356;
-        const yTop = 44 + Math.sin(norm * Math.PI * 18 + phaseTick) * 14;
-        let yBot = 108;
+        const yTop = 42 + Math.sin(norm * Math.PI * 18 + phaseTick) * 13;
+        let yBot = 104;
         if (simWaveMode === 'binaural') {
           const env = Math.cos(norm * Math.PI * 3 - phaseTick * 0.4);
-          yBot = 108 + Math.sin(norm * Math.PI * 18 + phaseTick) * 16 * env;
+          yBot = 104 + Math.sin(norm * Math.PI * 18 + phaseTick) * 15 * env;
         } else {
           const pulse = Math.max(0, Math.sin(norm * Math.PI * 4 - phaseTick * 0.5));
-          yBot = 108 + Math.sin(norm * Math.PI * 18 + phaseTick) * 16 * pulse;
+          yBot = 104 + Math.sin(norm * Math.PI * 18 + phaseTick) * 15 * pulse;
         }
         dTop += (x === 12 ? `M ${x} ${yTop}` : ` L ${x} ${yTop}`);
         dBot += (x === 12 ? `M ${x} ${yBot}` : ` L ${x} ${yBot}`);
@@ -1582,17 +1873,18 @@
 
     document.getElementById('simBinauralBtn').addEventListener('click', () => {
       simWaveMode = 'binaural';
-      document.getElementById('fig3BotLabel').textContent = 'CH_02: PHASE INTERFERENCE ENVELOPE (BINAURAL)';
+      document.getElementById('fig3BotLabel').textContent = 'CH_02: PHASE ENVELOPE (BINAURAL)';
     });
     document.getElementById('simIsoBtn').addEventListener('click', () => {
       simWaveMode = 'isochronic';
-      document.getElementById('fig3BotLabel').textContent = 'CH_02: AMPLITUDE RECTIFIED PULSE (ISOCHRONIC)';
+      document.getElementById('fig3BotLabel').textContent = 'CH_02: AMPLITUDE PULSE (ISOCHRONIC)';
     });
 
-    // Step Guide Scroll & Highlight
-    document.querySelectorAll('[data-focus-target]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const target = document.getElementById(btn.dataset.focusTarget);
+    // Scroll & Highlight Handlers
+    document.querySelectorAll('[data-focus-target], [data-scroll]').forEach(el => {
+      el.addEventListener('click', () => {
+        const id = el.dataset.focusTarget || el.dataset.scroll;
+        const target = document.getElementById(id);
         if (!target) return;
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
         target.classList.add('highlight-flash');

@@ -1,13 +1,14 @@
-# NIARB // Acoustic Reference Manual & Dual-Node DSP (v6.1)
+# NIARB // Acoustic Reference Manual & Dual-Node DSP (v6.2)
 
 **NIARB** is an open-source, zero-dependency Web Audio DSP workstation and interactive acoustic manual built with the *Making Software* and *Figma CAD Vector Blueprint* design system.
 
-Standard white, pink, or brown noise masks the human vocal frequency range (300 Hz – 3,000 Hz), forcing the listener's auditory cortex to strain to decode speech consonants and formants. NIARB v6.1 pairs a **Dual-Node Parametric Equalization Architecture** with a dedicated **Master Output Volume Stage** to provide complete acoustic control over lecture study environments.
+Standard white, pink, or brown noise masks the human vocal frequency range (300 Hz – 3,000 Hz), forcing the listener's auditory cortex to strain to decode speech consonants and formants. NIARB v6.2 pairs a **Dual-Node Parametric Equalization Architecture**, a dedicated **Master Output Volume Stage**, and an interactive **Spacetime Relativity Gravitational Dot Warp Canvas** to provide complete acoustic control and ergonomic visual feedback over lecture study environments.
 
 ---
 
 ## Technical Architecture & Capabilities
 
+- **Interactive Spacetime Relativity Background:** Dynamic 32px point-grid canvas simulating Einsteinian spacetime curvature; mouse movement exerts gravitational contraction ($R=180\text{px}$, strength $3200$) with smooth spring-back damping, dynamically adapting between paper and blueprint palette themes.
 - **Top Master Output Volume Stage:** Dedicated high-precision output fader located directly in the masthead header, featuring click-to-mute toggle and keyboard shortcuts (<kbd>&uarr;</kbd> / <kbd>&darr;</kbd>).
 - **Figma CAD Artboard with Dual Rulers:** Hi-DPI 2048-point FFT spectrum framed by precision calibrated top (Hz) and left (dB) technical rulers, with live crosshair cursor telemetry (`CURSOR: -- Hz | -- dB`).
 - **Dual-Node Parametric Spline Engine:**
